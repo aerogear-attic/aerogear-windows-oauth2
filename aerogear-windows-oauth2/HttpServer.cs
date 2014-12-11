@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,93 +14,85 @@ namespace AeroGear.OAuth2
 {
     public class HttpServer
     {
-        private int mPort;
-        private StreamSocketListener mListener;
-        private bool mIsActive = false;
-
-        public bool IsActive
-        {
-            get { return mIsActive; }
-        }
+        private int port;
+        private StreamSocketListener socketLlistener;
 
         public HttpServer(int port)
         {
-            mPort = port;
+            this.port = port;
         }
 
-        public async void Start()
+        public async Task Start()
         {
-            if (!mIsActive)
-            {
-                mIsActive = true;
-                mListener = new StreamSocketListener();
-                mListener.Control.QualityOfService = SocketQualityOfService.Normal;
-                mListener.ConnectionReceived += mListener_ConnectionReceived;
-                await mListener.BindServiceNameAsync(mPort.ToString());
-            }
-
+            socketLlistener = new StreamSocketListener();
+            socketLlistener.Control.QualityOfService = SocketQualityOfService.Normal;
+            socketLlistener.ConnectionReceived += mListener_ConnectionReceived;
+            await socketLlistener.BindServiceNameAsync(port.ToString());
         }
 
         public void Stop()
         {
-            if (mIsActive)
-            {
-                mListener.Dispose();
-                mIsActive = false;
-            }
+            socketLlistener.Dispose();
+            socketLlistener = null;
         }
 
         async void mListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                HandleRequest(args.Socket);
+                using (StreamSocket socket = args.Socket)
+                {
+                    using (DataReader reader = new DataReader(socket.InputStream))
+                    {
+                        reader.InputStreamOptions = InputStreamOptions.Partial;
+                        String request = await StreamReadLine(reader);
+                        string[] tokens = request.Split(' ');
+                        if (tokens.Length != 3)
+                        {
+                            return;
+                        }
+
+                        string httpUrl = tokens[1];
+
+                        using (DataWriter writer = new DataWriter(socket.OutputStream))
+                        {
+                            StringBuilder response = new StringBuilder();
+
+                            response.AppendLine("HTTP/1.1 301 Moved Permanently");
+                            response.AppendLine("Location: aerogear-oauth:" + httpUrl.Substring(1));
+                            response.AppendLine("");
+
+                            writer.WriteString(response.ToString());
+                            await writer.StoreAsync();
+                        }
+                    }
+
+                    Stop();
+                }
             });
-        }
-
-        private async void HandleRequest(StreamSocket socket)
-        {
-            //Initialize IO classes
-            DataReader reader = new DataReader(socket.InputStream);
-            DataWriter writer = new DataWriter(socket.OutputStream);
-
-            //handle actual HTTP request
-            String request = await StreamReadLine(reader);
-            string[] tokens = request.Split(' ');
-            if (tokens.Length != 3)
-            {
-                throw new Exception("invalid http request line");
-            }
-            string httpUrl = tokens[1];
-
-            //read HTTP headers - contents ignored in this sample
-            while (!String.IsNullOrEmpty(await StreamReadLine(reader))) ;
-
-            StringBuilder ret = new StringBuilder();
-
-            ret.AppendLine("HTTP/1.1 301 Moved Permanently");
-            ret.AppendLine("Location: aerogear-oauth:" + httpUrl.Substring(1));
-            ret.AppendLine("");
-
-            writer.WriteString(ret.ToString());
-            await writer.StoreAsync();
-
-            socket.Dispose();
-            //Stop();
         }
 
         #region static Helper methods
         private static async Task<string> StreamReadLine(DataReader reader)
         {
-            int next_char;
+            int currentChar = 0;
             string data = "";
-            while (true)
+            while (currentChar != '\n')
             {
-                await reader.LoadAsync(1);
-                next_char = reader.ReadByte();
-                if (next_char == '\n') { break; }
-                if (next_char == '\r') { continue; }
-                data += Convert.ToChar(next_char);
+                try
+                {
+                    uint op = await reader.LoadAsync(1);
+                    if (op == 0) { break; };
+                    currentChar = reader.ReadByte();
+                    if (currentChar != '\r') 
+                    {
+                        data += Convert.ToChar(currentChar);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
             }
             return data;
         }

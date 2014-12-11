@@ -24,7 +24,7 @@ namespace AeroGear.OAuth2
             var param = string.Format(PARAM_TEMPLATE, config.scope, config.redirectURL, config.clientId);
             var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
 
-            new HttpServer(8000).Start();
+            await new HttpServer(8000).Start();
 
             await Launcher.LaunchUriAsync(new Uri(uri));
         }
