@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aerogear-windows-oauth2", "aerogear-windows-oauth2\aerogear-windows-oauth2.csproj", "{D70FE93A-FCE4-49FE-A356-05BC5A9CF19E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "integrationTest", "integrationTest\integrationTest.csproj", "{34F226DC-15F0-495E-8721-D0F9B1EA29A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demo", "demo\demo.csproj", "{34F226DC-15F0-495E-8721-D0F9B1EA29A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
