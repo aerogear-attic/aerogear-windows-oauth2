@@ -85,7 +85,6 @@
     <Compile Include="AccountManager.cs" />
     <Compile Include="AuthzModule.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="HttpServer.cs" />
     <Compile Include="OAuth2Module.cs" />
     <Compile Include="AuthzWebRequest.cs" />
     <Compile Include="OAuth2Session.cs" />

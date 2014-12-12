@@ -8,11 +8,13 @@ using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Background;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -54,7 +56,7 @@ namespace demo
             // this event is handled for you.
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             //var openPicker = new FileOpenPicker
             //{
@@ -69,13 +71,13 @@ namespace demo
 
             var config = new Config()
             {
-                baseURL = new Uri("https://accounts.google.com"),
+                baseURL = new Uri("https://accounts.google.com/"),
                 authzEndpoint = "o/oauth2/auth",
-                redirectURL = "http://localhost:8000",
+                redirectURL = "com.aerogear.oauth.test:/oauth2Callback",
                 accessTokenEndpoint = "o/oauth2/token",
                 refreshTokenEndpoint = "o/oauth2/token",
                 revokeTokenEndpoint = "rest/revoke",
-                clientId = "517285908032-2fe2rsjj7rgl8ee1a5mrk1c59je14049.apps.googleusercontent.com",
+                clientId = "517285908032-8m6kbdccps1tpsnsrb5281sglvb2qo9g.apps.googleusercontent.com",
                 scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" })
             };
 
@@ -83,9 +85,10 @@ namespace demo
 
             var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files");
             ((AuthzWebRequest)request).authzModule = module;
+
         }
 
-        private async void viewActivated(CoreApplicationView sender, IActivatedEventArgs args1)
+        /*private async void viewActivated(CoreApplicationView sender, IActivatedEventArgs args1)
         {
             FileOpenPickerContinuationEventArgs args = args1 as FileOpenPickerContinuationEventArgs;
 
@@ -131,6 +134,6 @@ namespace demo
                 //await new MessageDialog("Error", ""+responseObject.StatusCode).ShowAsync();
 
             }
-        }
+        }*/
     }
 }

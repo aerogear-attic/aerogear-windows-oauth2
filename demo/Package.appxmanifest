@@ -23,7 +23,7 @@
       </m3:VisualElements>
       <Extensions>
         <Extension Category="windows.protocol">
-          <Protocol Name="aerogear-oauth" />
+          <Protocol Name="com.aerogear.oauth.test" />
         </Extension>
       </Extensions>
     </Application>
