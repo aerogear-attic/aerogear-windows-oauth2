@@ -78,7 +78,8 @@ namespace demo
                 refreshTokenEndpoint = "o/oauth2/token",
                 revokeTokenEndpoint = "rest/revoke",
                 clientId = "517285908032-8m6kbdccps1tpsnsrb5281sglvb2qo9g.apps.googleusercontent.com",
-                scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" })
+                scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
+                accountId = "google"
             };
 
             var module = AccountManager.AddAccount(config);

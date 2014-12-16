@@ -15,7 +15,7 @@ namespace tests
         {
             //given
             string token = "test token";
-            TrustedPersistantOAuth2Session session = new TrustedPersistantOAuth2Session();
+            TrustedPersistantOAuth2Session session = new TrustedPersistantOAuth2Session("dummy");
 
             //when
             var file = await session.SaveAccessToken(token);
@@ -34,7 +34,7 @@ namespace tests
             var file = await local.CreateFileAsync("token-file.txt", CreationCollisionOption.OpenIfExists);
             await file.DeleteAsync();
 
-            TrustedPersistantOAuth2Session session = new TrustedPersistantOAuth2Session();
+            TrustedPersistantOAuth2Session session = new TrustedPersistantOAuth2Session("dummy");
 
             //when
             try

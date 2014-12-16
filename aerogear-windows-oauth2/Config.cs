@@ -41,6 +41,8 @@ namespace AeroGear.OAuth2
         */
         public string clientSecret { get; set; }
 
+        public string accountId { get; set; }
+
         /**
         Applies the various scopes of the authorization.
         */

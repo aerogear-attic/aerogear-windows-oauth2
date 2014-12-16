@@ -14,23 +14,30 @@ namespace AeroGear.OAuth2
     {
         private const BinaryStringEncoding ENCODING = BinaryStringEncoding.Utf8;
 
+        private Session session;
+
+        public TrustedPersistantOAuth2Session(string accountId)
+        {
+            session = new Session() { accountId = accountId };
+        }
+
         public async void SaveAccessToken()
         {
         }
 
         public async Task SaveAccessToken(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration)
         {
-            DateTime now = new DateTime();
             await SaveAccessToken(new Session() {
                 accessToken = accessToken, 
                 refreshToken = refreshToken, 
-                accessTokenExpirationDate = now.AddMilliseconds(Double.Parse(accessTokenExpiration)), 
-                refreshTokenExpirationDate = now.AddMilliseconds(Double.Parse(refreshTokenExpiration)) 
+                accessTokenExpirationDate = DateTime.Now.AddSeconds(Double.Parse(accessTokenExpiration)),
+                refreshTokenExpirationDate = DateTime.Now.AddSeconds(Double.Parse(refreshTokenExpiration)) 
             });
         }
 
         public async Task SaveAccessToken(Session session)
         {
+            this.session = session;
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
             using (MemoryStream ms = new MemoryStream())
             {
@@ -38,6 +45,11 @@ namespace AeroGear.OAuth2
                 var bytes = ms.ToArray();
                 await SaveAccessToken(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
             }
+        }
+
+        public Session GetSession()
+        {
+            return session;
         }
 
         public async Task<string> ReadAccessToken()
@@ -64,6 +76,5 @@ namespace AeroGear.OAuth2
             await FileIO.WriteBufferAsync(file, buffProtected);
             return file;
         }
-
     }
 }
