@@ -22,7 +22,7 @@ namespace AeroGear.OAuth2
         public OAuth2Module(Config config)
         {
             this._config = config;
-            this.oauth2Session = new TrustedSessionRepositry();
+            this.oauth2Session = new TrustedSessionRepository();
             session = new Session() { accountId = config.accountId };
         }
 

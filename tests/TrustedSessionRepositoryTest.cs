@@ -8,14 +8,14 @@ using Windows.Storage.Streams;
 namespace tests
 {
     [TestClass]
-    public class TrustedSessionRepositryTest
+    public class TrustedSessionRepositoryTest
     {
         [TestMethod]
         public async Task SaveAndRead()
         {
             //given
             string token = "test token";
-            TrustedSessionRepositry session = new TrustedSessionRepositry();
+            TrustedSessionRepository session = new TrustedSessionRepository();
 
             //when
             var file = await session.SaveAccessToken(token);
@@ -34,7 +34,7 @@ namespace tests
             var file = await local.CreateFileAsync("token-file.txt", CreationCollisionOption.OpenIfExists);
             await file.DeleteAsync();
 
-            TrustedSessionRepositry session = new TrustedSessionRepositry();
+            TrustedSessionRepository session = new TrustedSessionRepository();
 
             //when
             try
