@@ -39,5 +39,10 @@ namespace AeroGear.OAuth2
         {
             return Instance.modules[name];
         }
+
+        public static OAuth2Module GetAccountByClientId(string clientId)
+        {
+            return Instance.modules.Where(entry => entry.Value.config.clientId == clientId).Single().Value;
+        }
     }
 }
