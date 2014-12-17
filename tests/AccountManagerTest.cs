@@ -63,7 +63,7 @@ namespace tests
             }
             catch (InvalidOperationException e)
             {
-                //success
+                Assert.AreEqual("Sequence contains no elements", e.Message);
             }
         }
 

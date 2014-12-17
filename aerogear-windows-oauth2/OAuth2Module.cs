@@ -14,22 +14,23 @@ namespace AeroGear.OAuth2
     public class OAuth2Module : AuthzModule
     {
         private const string PARAM_TEMPLATE = @"?scope={0}&redirect_uri={1}&client_id={2}&response_type=code";
+
+        private SessionRepositry repository = new TrustedSessionRepository();
+        protected Session session;
+
         private Config _config;
         public Config config { get { return _config; } }
-        private SessionRepositry oauth2Session;
-        private Session session;
 
         public OAuth2Module(Config config)
         {
             this._config = config;
-            this.oauth2Session = new TrustedSessionRepository();
             session = new Session() { accountId = config.accountId };
         }
 
         public OAuth2Module(Config config, SessionRepositry session)
             : this(config)
         {
-            this.oauth2Session = session;
+            this.repository = session;
         }
 
         public void RequestAccess()
@@ -47,7 +48,7 @@ namespace AeroGear.OAuth2
             }
         }
 
-        public async void RequestAuthorizationCode()
+        public virtual async void RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, _config.scope, _config.redirectURL, _config.clientId);
             var uri = new Uri(_config.baseURL, _config.authzEndpoint).AbsoluteUri + param;
@@ -64,7 +65,7 @@ namespace AeroGear.OAuth2
             return null;
         }
 
-        private async void RefreshAccessToken()
+        protected virtual async void RefreshAccessToken()
         {
             var parameters = new Dictionary<string, string>() { { "refresh_token", session.refreshToken }, { "client_id", _config.clientId }, { "grant_type", "refresh_token" } };
             if (_config.clientSecret != null)
@@ -74,12 +75,12 @@ namespace AeroGear.OAuth2
             await UpdateToken(parameters);
         }
 
-        public void extractCode(string query)
+        public void ExtractCode(string query)
         {
             IDictionary<string, string> queryParams = ParseQueryString(query);
             if (queryParams.ContainsKey("code"))
             {
-                exchangeAuthorizationCodeForAccessToken(queryParams["code"]);
+                ExchangeAuthorizationCodeForAccessToken(queryParams["code"]);
             }
             else
             {
@@ -87,7 +88,7 @@ namespace AeroGear.OAuth2
             }
         }
 
-        private async void exchangeAuthorizationCodeForAccessToken(string code)
+        private async void ExchangeAuthorizationCodeForAccessToken(string code)
         {
             var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", _config.clientId }, { "redirect_uri", _config.redirectURL } };
             if (_config.clientSecret != null)
@@ -118,7 +119,7 @@ namespace AeroGear.OAuth2
                 {
                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
                     session = (Session)serializer.ReadObject(stream);
-                    await oauth2Session.SaveAccessToken(session);
+                    await repository.SaveAccessToken(session);
                 }
             }
         }

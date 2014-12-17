@@ -36,7 +36,7 @@ namespace demo
 
                 // TODO: Handle URI activation
                 // The received URI is eventArgs.Uri.AbsoluteUri
-                AccountManager.GetAccountByName("google").extractCode(eventArgs.Uri.Query);
+                AccountManager.GetAccountByName("google").ExtractCode(eventArgs.Uri.Query);
             }
         }
 
