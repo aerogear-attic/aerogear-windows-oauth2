@@ -27,7 +27,7 @@ namespace AeroGear.OAuth2
 
 
         [DataMember(Name = "expires_in")]
-        public int assaccessTokenExpiration
+        public int accessTokenExpiration
         {
             get
             {
@@ -41,5 +41,15 @@ namespace AeroGear.OAuth2
 
         [DataMember(Name = "refresh_token")]
         public string refreshToken { get; set; }
+
+        public bool TokenIsNotExpired()
+        {
+            return DateTime.Now < accessTokenExpirationDate;
+        }
+
+        public bool RefreshTokenIsNotExpired()
+        {
+            return DateTime.Now < refreshTokenExpirationDate;
+        }
     }
 }

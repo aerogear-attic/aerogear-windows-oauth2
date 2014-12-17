@@ -25,13 +25,7 @@ namespace AeroGear.OAuth2
                 _authzModule = value;
                 if (authzModule != null)
                 {
-                    authzModule.RequestAccess((response, error) =>
-                    {
-                        if (error != null)
-                        {
-                            throw error;
-                        }
-                    });
+                    authzModule.RequestAccess();
                 }
             }
         }

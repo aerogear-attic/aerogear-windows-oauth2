@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SessionTest.cs" />
     <Compile Include="TrustedPersistantOauth2SessionTest.cs" />
   </ItemGroup>
   <ItemGroup>

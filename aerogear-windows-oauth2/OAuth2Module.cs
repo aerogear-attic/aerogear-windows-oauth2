@@ -29,17 +29,46 @@ namespace AeroGear.OAuth2
             this.oauth2Session = session;
         }
 
-        public void RequestAccess(Action<object, Exception> callback)
+        public void RequestAccess()
         {
-            RequestAuthorizationCode(callback);
+            if (oauth2Session.GetSession().accessToken == null || !oauth2Session.GetSession().TokenIsNotExpired())
+            {
+                if (oauth2Session.GetSession().refreshToken != null && oauth2Session.GetSession().RefreshTokenIsNotExpired())
+                {
+                    RefreshAccessToken();
+                }
+                else
+                {
+                    RequestAuthorizationCode();
+                }
+            }
         }
 
-        public async void RequestAuthorizationCode(Action<object, Exception> callback)
+        public async void RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, config.scope, config.redirectURL, config.clientId);
             var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
 
             await Launcher.LaunchUriAsync(new Uri(uri));
+        }
+
+        public Tuple<string, string> AuthorizationFields()
+        {
+            if (oauth2Session.GetSession().accessToken != null)
+            {
+                return Tuple.Create("Authorization", "Bearer " + oauth2Session.GetSession().accessToken);
+            }
+            return null;
+        }
+
+        private async void RefreshAccessToken()
+        {
+            var parameters = new Dictionary<string, string>() { { "refresh_token", oauth2Session.GetSession().refreshToken }, { "client_id", config.clientId }, { "grant_type", "refresh_token" } };
+            if (config.clientSecret != null)
+            {
+                parameters["client_secret"] = config.clientSecret;
+            }
+            await UpdateToken(parameters);
         }
 
         public void extractCode(string query)
@@ -57,14 +86,23 @@ namespace AeroGear.OAuth2
 
         private async void exchangeAuthorizationCodeForAccessToken(string code)
         {
-            var body = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", config.clientId }, { "redirect_uri", config.redirectURL } };
+            var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", config.clientId }, { "redirect_uri", config.redirectURL } };
+            if (config.clientSecret != null)
+            {
+                parameters["client_secret"] = config.clientSecret;
+            }
+            await UpdateToken(parameters);
+        }
+
+        private async Task UpdateToken(Dictionary<string, string> parameters)
+        {
             var request = WebRequest.Create(config.baseURL + config.accessTokenEndpoint);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
 
             using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
             {
-                foreach (KeyValuePair<string, string> entry in body)
+                foreach (KeyValuePair<string, string> entry in parameters)
                 {
                     var bytes = Encoding.UTF8.GetBytes(entry.Key + "=" + WebUtility.UrlEncode(entry.Value) + "&");
                     postStream.Write(bytes, 0, bytes.Length);
@@ -76,11 +114,10 @@ namespace AeroGear.OAuth2
                 using (var stream = response.GetResponseStream())
                 {
                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
-                    var session = serializer.ReadObject(stream);
-                    Debug.WriteLine(session);
+                    Session session = (Session)serializer.ReadObject(stream);
+                    await oauth2Session.SaveAccessToken(session);
                 }
             }
-
         }
 
         private IDictionary<string, string> ParseQueryString(string query)
@@ -96,11 +133,6 @@ namespace AeroGear.OAuth2
             }
 
             return result;
-        }
-
-        public Tuple<string, string> authorizationFields()
-        {
-            throw new NotImplementedException();
         }
     }
 }

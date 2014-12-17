@@ -37,6 +37,7 @@ namespace AeroGear.OAuth2
 
         public async Task SaveAccessToken(Session session)
         {
+            session.accountId = this.session.accountId;
             this.session = session;
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
             using (MemoryStream ms = new MemoryStream())

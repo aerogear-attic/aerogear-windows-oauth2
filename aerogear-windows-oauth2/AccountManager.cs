@@ -23,9 +23,16 @@ namespace AeroGear.OAuth2
 
         public static OAuth2Module AddAccount(Config config)
         {
-            OAuth2Module module = new OAuth2Module(config);
-            Instance.modules.Add(module.oauth2Session.GetSession().accountId, module);
-            return module;
+            if (Instance.modules.ContainsKey(config.accountId))
+            {
+                return Instance.modules[config.accountId];
+            }
+            else
+            {
+                OAuth2Module module = new OAuth2Module(config);
+                Instance.modules[config.accountId] = module;
+                return module;
+            }
         }
 
         public static OAuth2Module GetAccountByName(string name)
