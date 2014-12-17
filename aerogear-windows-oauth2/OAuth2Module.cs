@@ -16,17 +16,17 @@ namespace AeroGear.OAuth2
         private const string PARAM_TEMPLATE = @"?scope={0}&redirect_uri={1}&client_id={2}&response_type=code";
         private Config _config;
         public Config config { get { return _config; } }
-        private OAuth2Session oauth2Session;
+        private SessionRepositry oauth2Session;
         private Session session;
 
         public OAuth2Module(Config config)
         {
             this._config = config;
-            this.oauth2Session = new TrustedPersistantOAuth2Session();
+            this.oauth2Session = new TrustedSessionRepositry();
             session = new Session() { accountId = config.accountId };
         }
 
-        public OAuth2Module(Config config, OAuth2Session session)
+        public OAuth2Module(Config config, SessionRepositry session)
             : this(config)
         {
             this.oauth2Session = session;

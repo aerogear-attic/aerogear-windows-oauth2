@@ -10,7 +10,7 @@ using Windows.Storage.Streams;
 
 namespace AeroGear.OAuth2
 {
-    public class TrustedPersistantOAuth2Session : OAuth2Session
+    public class TrustedSessionRepositry : SessionRepositry
     {
         private const BinaryStringEncoding ENCODING = BinaryStringEncoding.Utf8;
 

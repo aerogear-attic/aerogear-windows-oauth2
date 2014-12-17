@@ -86,7 +86,7 @@
     <Compile Include="AuthzWebRequest.cs" />
     <Compile Include="OAuth2Session.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TrustedPersistantOAuth2Session.cs" />
+    <Compile Include="TrustedSessionRepositry.cs" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>

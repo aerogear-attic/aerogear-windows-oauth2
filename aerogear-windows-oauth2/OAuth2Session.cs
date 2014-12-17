@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AeroGear.OAuth2
 {
-    public interface OAuth2Session
+    public interface SessionRepositry
     {
         void SaveAccessToken();
         Task SaveAccessToken(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration);
