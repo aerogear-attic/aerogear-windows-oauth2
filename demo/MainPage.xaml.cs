@@ -31,13 +31,17 @@ namespace demo
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, IFileOpenPickerContinuable
     {
+        public static MainPage Current;
+
         public MainPage()
         {
             this.InitializeComponent();
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
+
+            Current = this;
         }
 
         /// <summary>
@@ -58,81 +62,51 @@ namespace demo
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            //var openPicker = new FileOpenPicker
-            //{
-            //    SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-            //    ViewMode = PickerViewMode.Thumbnail
-            //};
-            //openPicker.FileTypeFilter.Add(".jpg");
-
-            //CoreApplicationView view = CoreApplication.GetCurrentView();
-            //openPicker.PickMultipleFilesAndContinue();
-            //view.Activated += viewActivated;
-
-            var config = new Config()
+            var openPicker = new FileOpenPicker
             {
-                baseURL = new Uri("https://accounts.google.com/"),
-                authzEndpoint = "o/oauth2/auth",
-                redirectURL = "com.aerogear.oauth.test:/oauth2Callback",
-                accessTokenEndpoint = "o/oauth2/token",
-                refreshTokenEndpoint = "o/oauth2/token",
-                revokeTokenEndpoint = "rest/revoke",
-                clientId = "517285908032-8m6kbdccps1tpsnsrb5281sglvb2qo9g.apps.googleusercontent.com",
-                scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
-                accountId = "google"
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                ViewMode = PickerViewMode.Thumbnail
             };
-
-            var module = AccountManager.AddAccount(config);
-
-            var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
+            openPicker.FileTypeFilter.Add(".jpg");
+            openPicker.PickSingleFileAndContinue();
         }
 
-        /*private async void viewActivated(CoreApplicationView sender, IActivatedEventArgs args1)
+        public async void ContinueFileOpenPicker(FileOpenPickerContinuationEventArgs args)
         {
-            FileOpenPickerContinuationEventArgs args = args1 as FileOpenPickerContinuationEventArgs;
-
-            if (args != null)
+            if (args.Files.Count > 0)
             {
-                if (args.Files.Count == 0) return;
-
-                sender.Activated -= viewActivated;
-                StorageFile file = args.Files[0];
-
+                var file = args.Files[0];
 
                 var config = new Config()
                 {
-                    baseURL = new Uri("https://accounts.google.com"),
+                    baseURL = new Uri("https://accounts.google.com/"),
                     authzEndpoint = "o/oauth2/auth",
-                    redirectURL = "http://localhost:8000",
+                    redirectURL = "com.aerogear.oauth.test:/oauth2Callback",
                     accessTokenEndpoint = "o/oauth2/token",
                     refreshTokenEndpoint = "o/oauth2/token",
                     revokeTokenEndpoint = "rest/revoke",
-                    clientId = "517285908032-2fe2rsjj7rgl8ee1a5mrk1c59je14049.apps.googleusercontent.com",
-                    scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" })
+                    clientId = "517285908032-8m6kbdccps1tpsnsrb5281sglvb2qo9g.apps.googleusercontent.com",
+                    scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
+                    accountId = "google"
                 };
 
                 var module = AccountManager.AddAccount(config);
 
-                var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files");
-                ((AuthzWebRequest)request).authzModule = module;
+                var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
 
-                //using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
-                //{
-                //    using (var stream = await file.OpenAsync(FileAccessMode.Read))
-                //    {
-                //        Stream s = stream.AsStreamForRead();
-                //        s.CopyTo(postStream);
-                //    }
-                //}
-
-                //HttpWebResponse responseObject = (HttpWebResponse)await Task<WebResponse>.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, request);
-                //var responseStream = responseObject.GetResponseStream();
-                //var streamReader = new StreamReader(responseStream);
-
-                //await streamReader.ReadToEndAsync();
-                //await new MessageDialog("Error", ""+responseObject.StatusCode).ShowAsync();
-
+                using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
+                {
+                    using (var stream = await file.OpenAsync(FileAccessMode.Read))
+                    {
+                        Stream s = stream.AsStreamForRead();
+                        s.CopyTo(postStream);
+                    }
+                }
             }
-        }*/
+            else
+            {
+                await new MessageDialog("no file to upload").ShowAsync();
+            }
+        }
     }
 }
