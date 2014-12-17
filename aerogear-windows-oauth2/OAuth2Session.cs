@@ -9,9 +9,10 @@ namespace AeroGear.OAuth2
 {
     public interface SessionRepositry
     {
-        void SaveAccessToken();
-        Task SaveAccessToken(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration);
-        Task SaveAccessToken(Session session);
+        Task Save(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration);
+        Task Save(Session session);
+
+        Task<Session> Read(string accountId);
     }
 
     [DataContract]

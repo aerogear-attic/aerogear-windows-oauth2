@@ -13,14 +13,11 @@ namespace AeroGear.OAuth2
     public class TrustedSessionRepository : SessionRepositry
     {
         private const BinaryStringEncoding ENCODING = BinaryStringEncoding.Utf8;
+        private DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
 
-        public async void SaveAccessToken()
+        public async Task Save(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration)
         {
-        }
-
-        public async Task SaveAccessToken(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration)
-        {
-            await SaveAccessToken(new Session() {
+            await Save(new Session() {
                 accessToken = accessToken, 
                 refreshToken = refreshToken, 
                 accessTokenExpirationDate = DateTime.Now.AddSeconds(Double.Parse(accessTokenExpiration)),
@@ -28,21 +25,29 @@ namespace AeroGear.OAuth2
             });
         }
 
-        public async Task SaveAccessToken(Session session)
+        public async Task Save(Session session)
         {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
             using (MemoryStream ms = new MemoryStream())
             {
                 serializer.WriteObject(ms, session);
                 var bytes = ms.ToArray();
-                await SaveAccessToken(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
+                await SaveAccessToken(Encoding.UTF8.GetString(bytes, 0, bytes.Length), session.accountId);
             }
         }
 
-        public async Task<string> ReadAccessToken()
+        public async Task<Session> Read(string accountId)
+        {
+            string json = await ReadAccessToken(accountId);
+            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            {
+                return (Session) serializer.ReadObject(ms);
+            }
+        }
+
+        public async Task<string> ReadAccessToken(string name)
         {
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-            var file = await local.GetFileAsync("token-file.txt");
+            var file = await local.GetFileAsync(name + ".txt");
 
             var text = await FileIO.ReadBufferAsync(file);
 
@@ -52,14 +57,14 @@ namespace AeroGear.OAuth2
             return CryptographicBuffer.ConvertBinaryToString(ENCODING, buffUnprotected);
         }
 
-        public async Task<IStorageFile> SaveAccessToken(string token)
+        public async Task<IStorageFile> SaveAccessToken(string token, string name)
         {
             DataProtectionProvider Provider = new DataProtectionProvider("LOCAL=user");
             IBuffer buffMsg = CryptographicBuffer.ConvertStringToBinary(token, ENCODING);
             IBuffer buffProtected = await Provider.ProtectAsync(buffMsg);
 
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-            var file = await local.CreateFileAsync("token-file.txt", CreationCollisionOption.ReplaceExisting);
+            var file = await local.CreateFileAsync(name + ".txt", CreationCollisionOption.ReplaceExisting);
             await FileIO.WriteBufferAsync(file, buffProtected);
             return file;
         }

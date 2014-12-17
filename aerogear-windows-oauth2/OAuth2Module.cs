@@ -24,7 +24,19 @@ namespace AeroGear.OAuth2
         public OAuth2Module(Config config)
         {
             this._config = config;
-            session = new Session() { accountId = config.accountId };
+            init();
+        }
+
+        public async void init()
+        {
+            try
+            {
+                session = await repository.Read(config.accountId);
+            }
+            catch (Exception e)
+            {
+                session = new Session() { accountId = config.accountId };
+            }
         }
 
         public OAuth2Module(Config config, SessionRepositry session)
@@ -119,7 +131,7 @@ namespace AeroGear.OAuth2
                 {
                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
                     session = (Session)serializer.ReadObject(stream);
-                    await repository.SaveAccessToken(session);
+                    await repository.Save(session);
                 }
             }
         }

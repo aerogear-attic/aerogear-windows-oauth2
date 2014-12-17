@@ -18,11 +18,11 @@ namespace tests
             TrustedSessionRepository session = new TrustedSessionRepository();
 
             //when
-            var file = await session.SaveAccessToken(token);
+            var file = await session.SaveAccessToken(token, "dummy");
             
             //then
             Assert.IsNotNull(file);
-            var readToken = await session.ReadAccessToken();
+            var readToken = await session.ReadAccessToken("dummy");
             Assert.AreEqual(token, readToken);
         }
 
@@ -39,7 +39,7 @@ namespace tests
             //when
             try
             {
-                await session.ReadAccessToken();
+                await session.ReadAccessToken("none");
                 Assert.Fail("excption should have been thrown as there is no token saved yet");
             }
             catch (Exception e)
