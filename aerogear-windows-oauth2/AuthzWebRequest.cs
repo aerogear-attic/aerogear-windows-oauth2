@@ -13,22 +13,13 @@ namespace AeroGear.OAuth2
             this.webRequest = request;
         }
 
-        private AuthzModule _authzModule;
-        public AuthzModule authzModule
+        public AuthzWebRequest(WebRequest request, AuthzModule authzModule) : this(request)
         {
-            get
-            {
-                return _authzModule;
-            }
-            set
-            {
-                _authzModule = value;
-                if (authzModule != null)
-                {
-                    authzModule.RequestAccess();
-                }
-            }
+            this.authzModule = authzModule;
+            authzModule.RequestAccess();
         }
+
+        private AuthzModule authzModule;
 
         public new static WebRequest Create(string requestUriString)
         {
@@ -36,10 +27,22 @@ namespace AeroGear.OAuth2
             return new AuthzWebRequest(request);
         }
 
+        public static WebRequest Create(string requestUriString, AuthzModule authzModule)
+        {
+            var request = WebRequest.Create(requestUriString);
+            return new AuthzWebRequest(request, authzModule);
+        }
+
         public new static WebRequest Create(Uri requestUri)
         {
             var webRequest = WebRequest.Create(requestUri);
             return new AuthzWebRequest(webRequest);
+        }
+
+        public static WebRequest Create(Uri requestUri, AuthzModule authzModule)
+        {
+            var webRequest = WebRequest.Create(requestUri);
+            return new AuthzWebRequest(webRequest, authzModule);
         }
 
         public override void Abort()
@@ -49,6 +52,11 @@ namespace AeroGear.OAuth2
 
         public override IAsyncResult BeginGetRequestStream(AsyncCallback callback, object state)
         {
+            if (authzModule != null)
+            {
+                var field = authzModule.AuthorizationFields();
+                webRequest.Headers[field.Item1] = field.Item2;
+            }
             return webRequest.BeginGetRequestStream(callback, state);
         }
 

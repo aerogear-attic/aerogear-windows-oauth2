@@ -33,9 +33,6 @@ namespace demo
             if (args.Kind == ActivationKind.Protocol)
             {
                 ProtocolActivatedEventArgs eventArgs = args as ProtocolActivatedEventArgs;
-
-                // TODO: Handle URI activation
-                // The received URI is eventArgs.Uri.AbsoluteUri
                 AccountManager.GetAccountByName("google").ExtractCode(eventArgs.Uri.Query);
             }
         }

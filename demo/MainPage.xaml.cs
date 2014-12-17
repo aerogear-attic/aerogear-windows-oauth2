@@ -84,9 +84,7 @@ namespace demo
 
             var module = AccountManager.AddAccount(config);
 
-            var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files");
-            ((AuthzWebRequest)request).authzModule = module;
-
+            var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
         }
 
         /*private async void viewActivated(CoreApplicationView sender, IActivatedEventArgs args1)
