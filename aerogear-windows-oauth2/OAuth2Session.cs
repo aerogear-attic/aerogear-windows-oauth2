@@ -12,7 +12,6 @@ namespace AeroGear.OAuth2
         void SaveAccessToken();
         Task SaveAccessToken(string accessToken, string refreshToken, string accessTokenExpiration, string refreshTokenExpiration);
         Task SaveAccessToken(Session session);
-        Session GetSession();
     }
 
     [DataContract]

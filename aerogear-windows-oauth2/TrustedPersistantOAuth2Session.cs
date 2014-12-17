@@ -14,13 +14,6 @@ namespace AeroGear.OAuth2
     {
         private const BinaryStringEncoding ENCODING = BinaryStringEncoding.Utf8;
 
-        private Session session;
-
-        public TrustedPersistantOAuth2Session(string accountId)
-        {
-            session = new Session() { accountId = accountId };
-        }
-
         public async void SaveAccessToken()
         {
         }
@@ -37,8 +30,6 @@ namespace AeroGear.OAuth2
 
         public async Task SaveAccessToken(Session session)
         {
-            session.accountId = this.session.accountId;
-            this.session = session;
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
             using (MemoryStream ms = new MemoryStream())
             {
@@ -46,11 +37,6 @@ namespace AeroGear.OAuth2
                 var bytes = ms.ToArray();
                 await SaveAccessToken(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
             }
-        }
-
-        public Session GetSession()
-        {
-            return session;
         }
 
         public async Task<string> ReadAccessToken()

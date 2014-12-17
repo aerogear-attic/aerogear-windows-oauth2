@@ -14,13 +14,16 @@ namespace AeroGear.OAuth2
     public class OAuth2Module : AuthzModule
     {
         private const string PARAM_TEMPLATE = @"?scope={0}&redirect_uri={1}&client_id={2}&response_type=code";
-        private Config config;
-        public OAuth2Session oauth2Session { get; set; }
+        private Config _config;
+        public Config config { get { return _config; } }
+        private OAuth2Session oauth2Session;
+        private Session session;
 
         public OAuth2Module(Config config)
         {
-            this.config = config;
-            this.oauth2Session = new TrustedPersistantOAuth2Session(config.accountId);
+            this._config = config;
+            this.oauth2Session = new TrustedPersistantOAuth2Session();
+            session = new Session() { accountId = config.accountId };
         }
 
         public OAuth2Module(Config config, OAuth2Session session)
@@ -31,9 +34,9 @@ namespace AeroGear.OAuth2
 
         public void RequestAccess()
         {
-            if (oauth2Session.GetSession().accessToken == null || !oauth2Session.GetSession().TokenIsNotExpired())
+            if (session.accessToken == null || !session.TokenIsNotExpired())
             {
-                if (oauth2Session.GetSession().refreshToken != null && oauth2Session.GetSession().RefreshTokenIsNotExpired())
+                if (session.refreshToken != null && session.RefreshTokenIsNotExpired())
                 {
                     RefreshAccessToken();
                 }
@@ -46,27 +49,27 @@ namespace AeroGear.OAuth2
 
         public async void RequestAuthorizationCode()
         {
-            var param = string.Format(PARAM_TEMPLATE, config.scope, config.redirectURL, config.clientId);
-            var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
+            var param = string.Format(PARAM_TEMPLATE, _config.scope, _config.redirectURL, _config.clientId);
+            var uri = new Uri(_config.baseURL, _config.authzEndpoint).AbsoluteUri + param;
 
             await Launcher.LaunchUriAsync(new Uri(uri));
         }
 
         public Tuple<string, string> AuthorizationFields()
         {
-            if (oauth2Session.GetSession().accessToken != null)
+            if (session.accessToken != null)
             {
-                return Tuple.Create("Authorization", "Bearer " + oauth2Session.GetSession().accessToken);
+                return Tuple.Create("Authorization", "Bearer " + session.accessToken);
             }
             return null;
         }
 
         private async void RefreshAccessToken()
         {
-            var parameters = new Dictionary<string, string>() { { "refresh_token", oauth2Session.GetSession().refreshToken }, { "client_id", config.clientId }, { "grant_type", "refresh_token" } };
-            if (config.clientSecret != null)
+            var parameters = new Dictionary<string, string>() { { "refresh_token", session.refreshToken }, { "client_id", _config.clientId }, { "grant_type", "refresh_token" } };
+            if (_config.clientSecret != null)
             {
-                parameters["client_secret"] = config.clientSecret;
+                parameters["client_secret"] = _config.clientSecret;
             }
             await UpdateToken(parameters);
         }
@@ -86,17 +89,17 @@ namespace AeroGear.OAuth2
 
         private async void exchangeAuthorizationCodeForAccessToken(string code)
         {
-            var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", config.clientId }, { "redirect_uri", config.redirectURL } };
-            if (config.clientSecret != null)
+            var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", _config.clientId }, { "redirect_uri", _config.redirectURL } };
+            if (_config.clientSecret != null)
             {
-                parameters["client_secret"] = config.clientSecret;
+                parameters["client_secret"] = _config.clientSecret;
             }
             await UpdateToken(parameters);
         }
 
         private async Task UpdateToken(Dictionary<string, string> parameters)
         {
-            var request = WebRequest.Create(config.baseURL + config.accessTokenEndpoint);
+            var request = WebRequest.Create(_config.baseURL + _config.accessTokenEndpoint);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
 
@@ -114,7 +117,7 @@ namespace AeroGear.OAuth2
                 using (var stream = response.GetResponseStream())
                 {
                     DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
-                    Session session = (Session)serializer.ReadObject(stream);
+                    session = (Session)serializer.ReadObject(stream);
                     await oauth2Session.SaveAccessToken(session);
                 }
             }
