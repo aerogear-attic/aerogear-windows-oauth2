@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -83,7 +84,6 @@ namespace demo
                 {
                     ContinueUpload(module);
                 }
-
             }
         }
 
@@ -124,6 +124,7 @@ namespace demo
             }
 
             file = null;
+            button.Content = "Take Picture";
             await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
         }
     }
