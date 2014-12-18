@@ -55,14 +55,17 @@ namespace AeroGear.OAuth2
                 }
                 else
                 {
-                    RequestAuthorizationCode();
+                    await RequestAuthorizationCode();
                     return false;
                 }
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
-        public async virtual void RequestAuthorizationCode()
+        public async virtual Task RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, _config.scope, _config.redirectURL, _config.clientId);
             var uri = new Uri(_config.baseURL, _config.authzEndpoint).AbsoluteUri + param;
