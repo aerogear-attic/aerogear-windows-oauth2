@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +11,7 @@ using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-namespace SDKTemplate.Common
+namespace demo.Common
 {
     /// <summary>
     /// SuspensionManager captures global session state to simplify process lifetime management

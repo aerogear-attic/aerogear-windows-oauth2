@@ -1,5 +1,5 @@
 ﻿using AeroGear.OAuth2;
-using SDKTemplate.Common;
+using demo.Common;
 using System;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
