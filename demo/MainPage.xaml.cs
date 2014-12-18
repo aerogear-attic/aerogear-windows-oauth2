@@ -20,7 +20,7 @@ namespace demo
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page, IFileOpenPickerContinuable
+    public sealed partial class MainPage : Page, IFileOpenPickerContinuable, IWebAuthenticationContinuable
     {
         public static MainPage Current;
         public StorageFile file { get; set; }
@@ -125,6 +125,11 @@ namespace demo
 
             file = null;
             await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
+        }
+
+        async void IWebAuthenticationContinuable.ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
+        {
+            ContinueUpload(await AccountManager.ParseContinuationEvent(args));
         }
     }
 }

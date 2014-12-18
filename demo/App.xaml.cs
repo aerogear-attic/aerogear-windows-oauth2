@@ -33,14 +33,6 @@ namespace demo
 
         protected async override void OnActivated(IActivatedEventArgs args)
         {
-            if (args.Kind == ActivationKind.Protocol)
-            {
-                ProtocolActivatedEventArgs eventArgs = args as ProtocolActivatedEventArgs;
-                var module = AccountManager.GetAccountByName("google");
-                await module.ExtractCode(eventArgs.Uri.Query);
-                MainPage.Current.ContinueUpload(module);
-            }
-
             ContinuationManager = new ContinuationManager();
             Frame rootFrame = CreateRootFrame();
             await RestoreStatusAsync(args.PreviousExecutionState);
