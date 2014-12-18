@@ -46,3 +46,17 @@ Fill-in the OAuth2 configuration [1] this is an example for google.
 Create an OAuth2Module from AccountManager's factory method in [2].
 
 Inject OAuth2Module WebRequest http object in [3] and uses the WebRequest to GET/POST etc...
+
+Because of the browser dance you'll have to add the folling to OnActivated. When the application gets relaunced with the token from the browser.
+```csharp
+protected async override void OnActivated(IActivatedEventArgs args)
+{
+    if (args.Kind == ActivationKind.Protocol)
+    {
+        ProtocolActivatedEventArgs eventArgs = args as ProtocolActivatedEventArgs;
+        var module = AccountManager.GetAccountByName(currentAccountName);
+        await module.ExtractCode(eventArgs.Uri.Query);
+    }
+    
+    ...
+```
