@@ -13,7 +13,7 @@ Example Usage
 -------------
 
 ```csharp
-var config = new Config()                                                                          //[1]
+var config = new Config()                                                         //[1]
 {
     baseURL = new Uri("https://accounts.google.com/"),
     authzEndpoint = "o/oauth2/auth",
@@ -26,7 +26,7 @@ var config = new Config()                                                       
     accountId = "google"
 };
 
-var module = AccountManager.AddAccount(config);                                                      //[2]
+var module = AccountManager.AddAccount(config);                                   //[2]
 await module.RequestAccess();
 
 var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);    //[3]
@@ -47,7 +47,7 @@ Create an OAuth2Module from AccountManager's factory method in [2].
 
 Inject OAuth2Module WebRequest http object in [3] and uses the WebRequest to GET/POST etc...
 
-Because of the browser dance you'll have to add the folling to OnActivated. When the application gets relaunced with the token from the browser.
+Because of the browser dance you'll have to add the following to OnActivated. When the application gets relaunced with the token from the browser.
 ```csharp
 protected async override void OnActivated(IActivatedEventArgs args)
 {
