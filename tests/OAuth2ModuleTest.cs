@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AeroGear.OAuth2
 {
@@ -83,7 +84,7 @@ namespace AeroGear.OAuth2
             called.Add("RequestAuthorizationCode");
         }
 
-        protected override void RefreshAccessToken()
+        protected override Task RefreshAccessToken()
         {
             called.Add("RefreshAccessToken");
         }

@@ -8,7 +8,7 @@ namespace AeroGear.OAuth2
 {
     public interface AuthzModule
     {
-        void RequestAccess();
+        Task<bool> RequestAccess();
 
         Tuple<string, string> AuthorizationFields();
     }

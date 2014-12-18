@@ -3,25 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.Background;
-using Windows.ApplicationModel.Core;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
@@ -34,6 +23,7 @@ namespace demo
     public sealed partial class MainPage : Page, IFileOpenPickerContinuable
     {
         public static MainPage Current;
+        public StorageFile file { get; set; }
 
         public MainPage()
         {
@@ -62,21 +52,19 @@ namespace demo
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            var openPicker = new FileOpenPicker
+            if (file == null)
             {
-                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-                ViewMode = PickerViewMode.Thumbnail
-            };
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.PickSingleFileAndContinue();
-        }
-
-        public async void ContinueFileOpenPicker(FileOpenPickerContinuationEventArgs args)
-        {
-            if (args.Files.Count > 0)
+                var openPicker = new FileOpenPicker
+                {
+                    SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                    ViewMode = PickerViewMode.Thumbnail
+                };
+                openPicker.FileTypeFilter.Add(".jpg");
+                openPicker.PickSingleFileAndContinue();
+                button.Content = "Upload";
+            }
+            else
             {
-                var file = args.Files[0];
-
                 var config = new Config()
                 {
                     baseURL = new Uri("https://accounts.google.com/"),
@@ -91,22 +79,52 @@ namespace demo
                 };
 
                 var module = AccountManager.AddAccount(config);
-
-                var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
-
-                using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
+                if (await module.RequestAccess())
                 {
-                    using (var stream = await file.OpenAsync(FileAccessMode.Read))
-                    {
-                        Stream s = stream.AsStreamForRead();
-                        s.CopyTo(postStream);
-                    }
+                    ContinueUpload(module);
                 }
+
+            }
+        }
+
+        public async void ContinueFileOpenPicker(FileOpenPickerContinuationEventArgs args)
+        {
+            if (args.Files.Count > 0)
+            {
+                file = args.Files[0];
             }
             else
             {
                 await new MessageDialog("no file to upload").ShowAsync();
             }
+        }
+
+        public async void ContinueUpload(OAuth2Module module)
+        {
+            var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
+            request.Method = "POST";
+
+            using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
+            {
+                using (var stream = await file.OpenAsync(FileAccessMode.Read))
+                {
+                    Stream s = stream.AsStreamForRead();
+                    s.CopyTo(postStream);
+                }
+            }
+
+            HttpWebResponse responseObject = (HttpWebResponse)await Task<WebResponse>.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, request);
+            using (var responseStream = responseObject.GetResponseStream())
+            {
+                using (var streamReader = new StreamReader(responseStream))
+                {
+                    var response = await streamReader.ReadToEndAsync();
+                    Debug.WriteLine(response);
+                }
+            }
+
+            file = null;
+            await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
         }
     }
 }

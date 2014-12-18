@@ -9,6 +9,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Button HorizontalAlignment="Center" Click="Button_Click">Authenticate</Button>
+        <Button Name="button" HorizontalAlignment="Center" Click="Button_Click">Take Picture</Button>
     </Grid>
 </Page>

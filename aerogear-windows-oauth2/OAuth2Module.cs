@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization.Json;
@@ -45,22 +44,25 @@ namespace AeroGear.OAuth2
             this.repository = session;
         }
 
-        public void RequestAccess()
+        public async Task<bool> RequestAccess()
         {
             if (session.accessToken == null || !session.TokenIsNotExpired())
             {
                 if (session.refreshToken != null && session.RefreshTokenIsNotExpired())
                 {
-                    RefreshAccessToken();
+                    await RefreshAccessToken();
+                    return true;
                 }
                 else
                 {
                     RequestAuthorizationCode();
+                    return false;
                 }
             }
+            return true;
         }
 
-        public virtual async void RequestAuthorizationCode()
+        public async virtual void RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, _config.scope, _config.redirectURL, _config.clientId);
             var uri = new Uri(_config.baseURL, _config.authzEndpoint).AbsoluteUri + param;
@@ -77,7 +79,7 @@ namespace AeroGear.OAuth2
             return null;
         }
 
-        protected virtual async void RefreshAccessToken()
+        protected virtual async Task RefreshAccessToken()
         {
             var parameters = new Dictionary<string, string>() { { "refresh_token", session.refreshToken }, { "client_id", _config.clientId }, { "grant_type", "refresh_token" } };
             if (_config.clientSecret != null)
@@ -87,12 +89,12 @@ namespace AeroGear.OAuth2
             await UpdateToken(parameters);
         }
 
-        public void ExtractCode(string query)
+        public async Task ExtractCode(string query)
         {
             IDictionary<string, string> queryParams = ParseQueryString(query);
             if (queryParams.ContainsKey("code"))
             {
-                ExchangeAuthorizationCodeForAccessToken(queryParams["code"]);
+                await ExchangeAuthorizationCodeForAccessToken(queryParams["code"]);
             }
             else
             {
@@ -100,7 +102,7 @@ namespace AeroGear.OAuth2
             }
         }
 
-        private async void ExchangeAuthorizationCodeForAccessToken(string code)
+        private async Task ExchangeAuthorizationCodeForAccessToken(string code)
         {
             var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", _config.clientId }, { "redirect_uri", _config.redirectURL } };
             if (_config.clientSecret != null)

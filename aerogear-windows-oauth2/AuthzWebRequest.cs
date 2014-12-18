@@ -16,7 +16,6 @@ namespace AeroGear.OAuth2
         public AuthzWebRequest(WebRequest request, AuthzModule authzModule) : this(request)
         {
             this.authzModule = authzModule;
-            authzModule.RequestAccess();
         }
 
         private AuthzModule authzModule;

@@ -36,7 +36,9 @@ namespace demo
             if (args.Kind == ActivationKind.Protocol)
             {
                 ProtocolActivatedEventArgs eventArgs = args as ProtocolActivatedEventArgs;
-                AccountManager.GetAccountByName("google").ExtractCode(eventArgs.Uri.Query);
+                var module = AccountManager.GetAccountByName("google");
+                await module.ExtractCode(eventArgs.Uri.Query);
+                MainPage.Current.ContinueUpload(module);
             }
 
             ContinuationManager = new ContinuationManager();
@@ -182,11 +184,12 @@ namespace demo
         /// </summary>
         /// <param name="sender">The source of the suspend request.</param>
         /// <param name="e">Details about the suspend request.</param>
-        private void OnSuspending(object sender, SuspendingEventArgs e)
+        private async void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
 
             // TODO: Save application state and stop any background activity
+            await SuspensionManager.SaveAsync();
             deferral.Complete();
         }
     }
