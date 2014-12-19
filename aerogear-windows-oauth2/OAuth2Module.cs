@@ -6,6 +6,8 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Foundation.Collections;
+using Windows.Security.Authentication.Web;
 using Windows.System;
 
 namespace AeroGear.OAuth2
@@ -70,7 +72,8 @@ namespace AeroGear.OAuth2
             var param = string.Format(PARAM_TEMPLATE, _config.scope, _config.redirectURL, _config.clientId);
             var uri = new Uri(_config.baseURL, _config.authzEndpoint).AbsoluteUri + param;
 
-            await Launcher.LaunchUriAsync(new Uri(uri));
+            var values = new ValueSet() { { "name", _config.accountId } };
+            WebAuthenticationBroker.AuthenticateAndContinue(new Uri(uri), new Uri(config.redirectURL), values, WebAuthenticationOptions.None);
         }
 
         public Tuple<string, string> AuthorizationFields()
