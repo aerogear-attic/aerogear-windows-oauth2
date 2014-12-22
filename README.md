@@ -69,11 +69,11 @@ to authenticate again. Upload to google drive passing the OAuthModule with the a
 In you upload method you can use the `AuthzWebRequest` a special `WebRequest` that will take care of adding the authentication headers.
  
 ```csharp
-	public async void Upload(OAuth2Module module)
-	{
-		var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
-		request.Method = "POST";
+public async void Upload(OAuth2Module module)
+{
+	var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
+	request.Method = "POST";
 
-		using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
+	using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
 ...
 ```
