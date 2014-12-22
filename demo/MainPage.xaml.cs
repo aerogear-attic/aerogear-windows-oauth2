@@ -99,6 +99,8 @@ namespace demo
 
             using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
             {
+                button.IsEnabled = false;
+                progress.IsActive = true;
                 using (var stream = await file.OpenAsync(FileAccessMode.Read))
                 {
                     Stream s = stream.AsStreamForRead();
@@ -118,6 +120,9 @@ namespace demo
 
             file = null;
             button.Content = "Take Picture";
+            button.IsEnabled = true;
+            progress.IsActive = false;
+
             await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
         }
 

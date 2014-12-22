@@ -10,5 +10,6 @@
 
     <Grid>
         <Button Name="button" HorizontalAlignment="Center" Click="Button_Click">Take Picture</Button>
+        <ProgressRing Name="progress" HorizontalAlignment="Center" Margin="0,0,0,200" VerticalAlignment="Center"/>
     </Grid>
 </Page>
