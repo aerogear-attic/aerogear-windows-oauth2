@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 using AeroGear.OAuth2;
+using System.Threading.Tasks;
 
 namespace tests
 {
@@ -8,44 +9,44 @@ namespace tests
     public class AccountManagerTest
     {
         [TestMethod]
-        public void AddAccountTest()
+        public async Task AddAccountTest()
         {
             //given
             string name = "test";
             Config config = new Config() { accountId = name };
 
             //when
-            AccountManager.AddAccount(config);
+            await AccountManager.AddAccount(config);
 
             //then
             Assert.IsNotNull(AccountManager.GetAccountByName(name));
         }
 
         [TestMethod]
-        public void AddAccountMultipleTimesTest()
+        public async Task AddAccountMultipleTimesTest()
         {
             //given
             string name = "test";
             Config config = new Config() { accountId = name };
 
             //when
-            var module1 = AccountManager.AddAccount(config);
+            var module1 = await AccountManager.AddAccount(config);
             config.accessTokenEndpoint = "other";
-            var module2 = AccountManager.AddAccount(config);
+            var module2 = await AccountManager.AddAccount(config);
 
             //then
             Assert.AreSame(module1, module2);
         }
 
         [TestMethod]
-        public void GetByClientId()
+        public async Task GetByClientId()
         {
             //given
             string clientId = "test";
             Config config = new Config() { accountId = "dummy", clientId = clientId };
 
             //when
-            var module1 = AccountManager.AddAccount(config);
+            var module1 = await AccountManager.AddAccount(config);
             var module2 = AccountManager.GetAccountByClientId(clientId);
 
             //then

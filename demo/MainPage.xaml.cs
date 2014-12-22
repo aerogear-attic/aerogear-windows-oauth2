@@ -66,23 +66,16 @@ namespace demo
             }
             else
             {
-                var config = new Config()
-                {
-                    baseURL = new Uri("https://accounts.google.com/"),
-                    authzEndpoint = "o/oauth2/auth",
-                    redirectURL = "com.aerogear.oauth.test:/oauth2Callback",
-                    accessTokenEndpoint = "o/oauth2/token",
-                    refreshTokenEndpoint = "o/oauth2/token",
-                    revokeTokenEndpoint = "rest/revoke",
-                    clientId = "517285908032-8m6kbdccps1tpsnsrb5281sglvb2qo9g.apps.googleusercontent.com",
-                    scopes = new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
-                    accountId = "google"
-                };
+                var config = await GoogleConfig.Create(
+                    "517285908032-ncche214v7htbqcs2pi3l5okuoc62nhe.apps.googleusercontent.com",
+                    new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
+                    "google"
+                );
 
-                var module = AccountManager.AddAccount(config);
-                if (await module.RequestAccess())
+                var module = await AccountManager.AddAccount(config);
+                if (await module.RequestAccessAndContinue())
                 {
-                    ContinueUpload(module);
+                    Upload(module);
                 }
             }
         }
@@ -99,7 +92,7 @@ namespace demo
             }
         }
 
-        public async void ContinueUpload(OAuth2Module module)
+        public async void Upload(OAuth2Module module)
         {
             var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
             request.Method = "POST";
@@ -130,7 +123,7 @@ namespace demo
 
         async void IWebAuthenticationContinuable.ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
         {
-            ContinueUpload(await AccountManager.ParseContinuationEvent(args));
+            Upload(await AccountManager.ParseContinuationEvent(args));
         }
     }
 }

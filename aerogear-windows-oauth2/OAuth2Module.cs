@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Foundation.Collections;
 using Windows.Security.Authentication.Web;
-using Windows.System;
 
 namespace AeroGear.OAuth2
 {
@@ -19,34 +18,37 @@ namespace AeroGear.OAuth2
         private SessionRepositry repository = new TrustedSessionRepository();
         protected Session session;
 
-        private Config _config;
-        public Config config { get { return _config; } }
+        public Config config { get; private set; }
 
-        public OAuth2Module(Config config)
+        public async static Task<OAuth2Module> Create(Config config)
         {
-            this._config = config;
-            init();
+            OAuth2Module module = new OAuth2Module();
+            await module.init(config);
+            return module; 
         }
 
-        public async void init()
+        public async static Task<OAuth2Module> Create(Config config, SessionRepositry repository)
         {
+            OAuth2Module module = new OAuth2Module();
+            module.repository = repository;
+            await module.init(config);
+            return module;
+        }
+
+        public async Task init(Config config)
+        {
+            this.config = config;
             try
             {
                 session = await repository.Read(config.accountId);
             }
-            catch (Exception e)
+            catch (IOException e)
             {
                 session = new Session() { accountId = config.accountId };
             }
         }
 
-        public OAuth2Module(Config config, SessionRepositry session)
-            : this(config)
-        {
-            this.repository = session;
-        }
-
-        public async Task<bool> RequestAccess()
+        public async Task<bool> RequestAccessAndContinue()
         {
             if (session.accessToken == null || !session.TokenIsNotExpired())
             {
@@ -57,7 +59,7 @@ namespace AeroGear.OAuth2
                 }
                 else
                 {
-                    await RequestAuthorizationCode();
+                    RequestAuthorizationCode();
                     return false;
                 }
             }
@@ -67,12 +69,12 @@ namespace AeroGear.OAuth2
             }
         }
 
-        public async virtual Task RequestAuthorizationCode()
+        public virtual void RequestAuthorizationCode()
         {
-            var param = string.Format(PARAM_TEMPLATE, _config.scope, _config.redirectURL, _config.clientId);
-            var uri = new Uri(_config.baseURL, _config.authzEndpoint).AbsoluteUri + param;
+            var param = string.Format(PARAM_TEMPLATE, config.scope, config.redirectURL, config.clientId);
+            var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
 
-            var values = new ValueSet() { { "name", _config.accountId } };
+            var values = new ValueSet() { { "name", config.accountId } };
             WebAuthenticationBroker.AuthenticateAndContinue(new Uri(uri), new Uri(config.redirectURL), values, WebAuthenticationOptions.None);
         }
 
@@ -87,10 +89,10 @@ namespace AeroGear.OAuth2
 
         protected virtual async Task RefreshAccessToken()
         {
-            var parameters = new Dictionary<string, string>() { { "refresh_token", session.refreshToken }, { "client_id", _config.clientId }, { "grant_type", "refresh_token" } };
-            if (_config.clientSecret != null)
+            var parameters = new Dictionary<string, string>() { { "refresh_token", session.refreshToken }, { "client_id", config.clientId }, { "grant_type", "refresh_token" } };
+            if (config.clientSecret != null)
             {
-                parameters["client_secret"] = _config.clientSecret;
+                parameters["client_secret"] = config.clientSecret;
             }
             await UpdateToken(parameters);
         }
@@ -110,17 +112,17 @@ namespace AeroGear.OAuth2
 
         private async Task ExchangeAuthorizationCodeForAccessToken(string code)
         {
-            var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", _config.clientId }, { "redirect_uri", _config.redirectURL } };
-            if (_config.clientSecret != null)
+            var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", config.clientId }, { "redirect_uri", config.redirectURL } };
+            if (config.clientSecret != null)
             {
-                parameters["client_secret"] = _config.clientSecret;
+                parameters["client_secret"] = config.clientSecret;
             }
             await UpdateToken(parameters);
         }
 
         private async Task UpdateToken(Dictionary<string, string> parameters)
         {
-            var request = WebRequest.Create(_config.baseURL + _config.accessTokenEndpoint);
+            var request = WebRequest.Create(config.baseURL + config.accessTokenEndpoint);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
 

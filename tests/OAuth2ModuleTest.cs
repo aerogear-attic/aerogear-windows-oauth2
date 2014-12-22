@@ -10,20 +10,20 @@ namespace AeroGear.OAuth2
     public class OAuth2ModuleTest
     {
         [TestMethod]
-        public async void ShouldRequestAccessCode()
+        public async Task ShouldRequestAccessCode()
         {
             //given
             MockOAuth2Module module = new MockOAuth2Module();
 
             //when
-            await module.RequestAccess();
+            await module.RequestAccessAndContinue();
 
             //then
             module.AssertCalled("RequestAuthorizationCode");
         }
 
         [TestMethod]
-        public async void ShouldRequestRenewToken()
+        public void ShouldRequestRenewToken()
         {
             //given
             Session session = new Session()
@@ -36,7 +36,7 @@ namespace AeroGear.OAuth2
             MockOAuth2Module module = new MockOAuth2Module(session);
 
             //when
-            await module.RequestAccess();
+            module.RequestAccessAndContinue();
 
             //then
             module.AssertCalled("RefreshAccessToken");
@@ -68,21 +68,20 @@ namespace AeroGear.OAuth2
     public class MockOAuth2Module : OAuth2Module
     {
         private IList<string> called = new List<string>();
-        public MockOAuth2Module()
-            : base(new Config() { accountId = "test" })
-        {
 
+        public MockOAuth2Module()
+            : this(new Session() { accountId = "test" })
+        {
         }
 
-        public MockOAuth2Module(Session session) : this()
+        public MockOAuth2Module(Session session)
         {
             this.session = session;
         }
 
-        public override Task RequestAuthorizationCode()
+        public override void RequestAuthorizationCode()
         {
             called.Add("RequestAuthorizationCode");
-            return null;
         }
 
         protected override Task RefreshAccessToken()
