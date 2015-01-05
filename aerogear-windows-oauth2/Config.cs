@@ -53,12 +53,15 @@ namespace AeroGear.OAuth2
             get
             {
                 var scopeString = "";
-                foreach (string scope in scopes)
+                if (scopes != null)
                 {
-                    scopeString += WebUtility.UrlEncode(scope);
-                    if (scope != scopes.Last())
+                    foreach (string scope in scopes)
                     {
-                        scopeString += "+";
+                        scopeString += WebUtility.UrlEncode(scope);
+                        if (scope != scopes.Last())
+                        {
+                            scopeString += "+";
+                        }
                     }
                 }
                 return scopeString;

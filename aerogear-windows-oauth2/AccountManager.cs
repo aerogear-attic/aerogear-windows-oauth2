@@ -35,6 +35,13 @@ namespace AeroGear.OAuth2
             }
         }
 
+        public static async Task<OAuth2Module> AddKeyCloak(KeycloakConfig config)
+        {
+            OAuth2Module module = await KeycloakOAuth2Module.Create(config);
+            Instance.modules[config.accountId] = module;
+            return module;
+        }
+
         public static OAuth2Module GetAccountByName(string name)
         {
             return Instance.modules[name];
@@ -72,4 +79,25 @@ namespace AeroGear.OAuth2
             };
         }
     }
+
+    public class KeycloakConfig : Config
+    {
+        public async static Task<KeycloakConfig> Create(string clientId, string host, string realm)
+        {
+            var protocol = await ManifestInfo.GetProtocol();
+            var defaulRealmName = clientId + "-realm";
+            var realmName = realm != null ? realm : defaulRealmName;
+            return new KeycloakConfig() {
+                baseURL = new Uri(host + "/auth/"),
+                authzEndpoint = string.Format("realms/{0}/tokens/login", realmName),
+                redirectURL = protocol + ":/oauth2Callback",
+                accessTokenEndpoint = string.Format("realms/{0}/tokens/access/codes", realmName),
+                clientId = clientId,
+                refreshTokenEndpoint = string.Format("realms/{0}/tokens/refresh", realmName),
+                revokeTokenEndpoint = string.Format("realms/%@/tokens/logout", realmName),
+                accountId = clientId
+            };
+        }
+    }
+
 }

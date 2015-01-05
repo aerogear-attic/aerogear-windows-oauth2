@@ -15,7 +15,7 @@ namespace AeroGear.OAuth2
     {
         private const string PARAM_TEMPLATE = @"?scope={0}&redirect_uri={1}&client_id={2}&response_type=code";
 
-        private SessionRepositry repository = new TrustedSessionRepository();
+        protected SessionRepositry repository = new TrustedSessionRepository();
         protected Session session;
 
         public Config config { get; private set; }
@@ -71,7 +71,7 @@ namespace AeroGear.OAuth2
 
         public virtual void RequestAuthorizationCode()
         {
-            var param = string.Format(PARAM_TEMPLATE, config.scope, config.redirectURL, config.clientId);
+            var param = string.Format(PARAM_TEMPLATE, Uri.EscapeDataString(config.scope), Uri.EscapeDataString(config.redirectURL), Uri.EscapeDataString(config.clientId));
             var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
 
             var values = new ValueSet() { { "name", config.accountId } };
@@ -137,12 +137,18 @@ namespace AeroGear.OAuth2
 
             using (var response = await Task<WebResponse>.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, request))
             {
-                using (var stream = response.GetResponseStream())
-                {
-                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
-                    session = (Session)serializer.ReadObject(stream);
-                    await repository.Save(session);
-                }
+                session = await ParseResponse(response.GetResponseStream());
+            }
+        }
+
+        protected virtual async Task<Session> ParseResponse(Stream respondeStream)
+        {
+            using (var stream = respondeStream)
+            {
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
+                var session = (Session)serializer.ReadObject(stream);
+                await repository.Save(session);
+                return session;
             }
         }
 
