@@ -1,18 +1,14 @@
 ﻿using AeroGear.OAuth2;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -71,10 +67,12 @@ namespace demo
             else
             {
                 var config = await GoogleConfig.Create(
-                    "517285908032-11moj33qbn01m7sem6g7gmfco2tp252v.apps.googleusercontent.com",
+                    "517285908032-12332132132131321312.apps.googleusercontent.com",
                     new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
                     "google"
                 );
+
+                //var config = await KeycloakConfig.Create("shoot-third-party", "https://localhost:8443", "shoot-realm");
 
                 var module = await AccountManager.AddAccount(config);
                 if (await module.RequestAccessAndContinue())
@@ -99,23 +97,28 @@ namespace demo
 
         public async void Upload(OAuth2Module module)
         {
-            HttpContent stringContent = new StringContent(file.Name);
-
             using (var client = new HttpClient())
-            using (var formData = new MultipartFormDataContent())
+            using (var content = new MultipartFormDataContent())
             {
-                client.DefaultRequestHeaders.Authorization = module.AuthenticationHeaderValue();
-
-                formData.Add(new StreamContent((await file.OpenAsync(FileAccessMode.Read)).AsStreamForRead()), file.Name);
-
                 button.IsEnabled = false;
                 progress.IsActive = true;
 
-                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri("https://www.googleapis.com/upload/drive/v2/files"));
-                requestMessage.Content = formData;
-                HttpResponseMessage responseObject = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
-                Debug.WriteLine(responseObject);
-                await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
+                client.DefaultRequestHeaders.Authorization = module.AuthenticationHeaderValue();
+
+                var fileContent = new StreamContent((await file.OpenAsync(FileAccessMode.Read)).AsStreamForRead());
+                fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                {
+                    Name = "\"image\"",
+                    FileName = "\"" + file.Name + "\""
+                };
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpg");
+
+                content.Add(fileContent);
+                HttpResponseMessage response = await client.PostAsync(new Uri("https://www.googleapis.com/upload/drive/v2/files"), content);
+                string responseString = await response.Content.ReadAsStringAsync();
+
+                Debug.WriteLine(responseString);
+                await new MessageDialog("uploaded file " + (response.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
             }
 
             file = null;
