@@ -111,7 +111,7 @@ namespace demo
                 button.IsEnabled = false;
                 progress.IsActive = true;
 
-                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri("https://localhost:8443/shoot/rest/photos"));
+                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri("https://www.googleapis.com/upload/drive/v2/files"));
                 requestMessage.Content = formData;
                 HttpResponseMessage responseObject = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
                 Debug.WriteLine(responseObject);
