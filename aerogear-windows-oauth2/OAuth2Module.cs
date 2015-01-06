@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -85,6 +86,11 @@ namespace AeroGear.OAuth2
                 return Tuple.Create("Authorization", "Bearer " + session.accessToken);
             }
             return null;
+        }
+
+        public AuthenticationHeaderValue AuthenticationHeaderValue()
+        {
+            return new AuthenticationHeaderValue("Baerer", session.accessToken);
         }
 
         protected virtual async Task RefreshAccessToken()
