@@ -103,16 +103,23 @@ namespace AeroGear.OAuth2
             await UpdateToken(parameters);
         }
 
-        public async Task ExtractCode(string query)
+        public async Task ExtractCode(WebAuthenticationBrokerContinuationEventArgs args)
         {
-            IDictionary<string, string> queryParams = ParseQueryString(query);
-            if (queryParams.ContainsKey("code"))
+            if (args.WebAuthenticationResult.ResponseStatus == WebAuthenticationStatus.Success) 
             {
-                await ExchangeAuthorizationCodeForAccessToken(queryParams["code"]);
+                IDictionary<string, string> queryParams = ParseQueryString(new Uri(args.WebAuthenticationResult.ResponseData).Query);
+                if (queryParams.ContainsKey("code"))
+                {
+                    await ExchangeAuthorizationCodeForAccessToken(queryParams["code"]);
+                }
+                else
+                {
+                    throw new Exception("no code parameter found in redirect");
+                }
             }
             else
             {
-                throw new Exception("user cancelled the authorization");
+                throw new Exception(string.Format("user cancelled the authorization status: '{0}': details: {1}", args.WebAuthenticationResult.ResponseStatus, args.WebAuthenticationResult.ResponseErrorDetail));
             }
         }
 
