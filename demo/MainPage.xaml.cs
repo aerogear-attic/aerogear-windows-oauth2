@@ -73,6 +73,8 @@ namespace demo
                 );
 
                 //var config = await KeycloakConfig.Create("shoot-third-party", "https://localhost:8443", "shoot-realm");
+                //var config = FacebookConfig.Create("1654557457742519", "9cab3cb953d3194908f44f1764b5b921", 
+                //    new List<string>(new string[] { "photo_upload, publish_actions" }), "facebook");
 
                 var module = await AccountManager.AddAccount(config);
                 if (await module.RequestAccessAndContinue())

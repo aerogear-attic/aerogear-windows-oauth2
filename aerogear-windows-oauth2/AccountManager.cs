@@ -42,6 +42,13 @@ namespace AeroGear.OAuth2
             return module;
         }
 
+        public static async Task<OAuth2Module> AddFacebook(FacebookConfig config)
+        {
+            OAuth2Module module = await FacebookOAuth2Module.Create(config);
+            Instance.modules[config.accountId] = module;
+            return module;
+        }
+
         public static OAuth2Module GetAccountByName(string name)
         {
             return Instance.modules[name];
@@ -67,7 +74,7 @@ namespace AeroGear.OAuth2
             var protocol = await ManifestInfo.GetProtocol();
             return new GoogleConfig()
             {
-                baseURL = new Uri("https://accounts.google.com/"),
+                baseURL = "https://accounts.google.com/",
                 authzEndpoint = "o/oauth2/auth",
                 redirectURL = protocol + ":/oauth2Callback",
                 accessTokenEndpoint = "o/oauth2/token",
@@ -88,7 +95,7 @@ namespace AeroGear.OAuth2
             var defaulRealmName = clientId + "-realm";
             var realmName = realm != null ? realm : defaulRealmName;
             return new KeycloakConfig() {
-                baseURL = new Uri(host + "/auth/"),
+                baseURL = host + "/auth/",
                 authzEndpoint = string.Format("realms/{0}/tokens/login", realmName),
                 redirectURL = protocol + ":/oauth2Callback",
                 accessTokenEndpoint = string.Format("realms/{0}/tokens/access/codes", realmName),
@@ -100,4 +107,23 @@ namespace AeroGear.OAuth2
         }
     }
 
+    public class FacebookConfig : Config
+    {
+        public static FacebookConfig Create(string clientId, string clientSecret, List<string> scopes, string accountId)
+        {
+            return new FacebookConfig()
+            {
+                baseURL = "",
+                authzEndpoint = "https://www.facebook.com/dialog/oauth",
+                redirectURL = "fb" + clientId + "://authorize/",
+                accessTokenEndpoint = "https://graph.facebook.com/oauth/access_token",
+                clientId = clientId,
+                refreshTokenEndpoint = "https://graph.facebook.com/oauth/access_token",
+                clientSecret = clientSecret,
+                revokeTokenEndpoint = "https://www.facebook.com/me/permissions",
+                scopes = scopes,
+                accountId = accountId
+            };
+        }
+    }
 }

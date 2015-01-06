@@ -7,7 +7,7 @@ namespace AeroGear.OAuth2
 {
     public class Config
     {
-        public Uri baseURL { get; set; }
+        public string baseURL { get; set; }
 
         /**
         Applies the "callback URL" once request token issued.

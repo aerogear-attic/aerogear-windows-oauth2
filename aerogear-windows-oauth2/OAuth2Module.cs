@@ -74,7 +74,7 @@ namespace AeroGear.OAuth2
         public virtual void RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, config.scope, Uri.EscapeDataString(config.redirectURL), Uri.EscapeDataString(config.clientId));
-            var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
+            var uri = new Uri(config.baseURL + config.authzEndpoint).AbsoluteUri + param;
 
             var values = new ValueSet() { { "name", config.accountId } };
             WebAuthenticationBroker.AuthenticateAndContinue(new Uri(uri), new Uri(config.redirectURL), values, WebAuthenticationOptions.None);
@@ -166,7 +166,7 @@ namespace AeroGear.OAuth2
             }
         }
 
-        private IDictionary<string, string> ParseQueryString(string query)
+        protected IDictionary<string, string> ParseQueryString(string query)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
 
