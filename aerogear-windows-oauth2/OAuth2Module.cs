@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Activation;
 using Windows.Foundation.Collections;
 using Windows.Security.Authentication.Web;
 
@@ -72,7 +73,7 @@ namespace AeroGear.OAuth2
 
         public virtual void RequestAuthorizationCode()
         {
-            var param = string.Format(PARAM_TEMPLATE, Uri.EscapeDataString(config.scope), Uri.EscapeDataString(config.redirectURL), Uri.EscapeDataString(config.clientId));
+            var param = string.Format(PARAM_TEMPLATE, config.scope, Uri.EscapeDataString(config.redirectURL), Uri.EscapeDataString(config.clientId));
             var uri = new Uri(config.baseURL, config.authzEndpoint).AbsoluteUri + param;
 
             var values = new ValueSet() { { "name", config.accountId } };
@@ -90,7 +91,7 @@ namespace AeroGear.OAuth2
 
         public AuthenticationHeaderValue AuthenticationHeaderValue()
         {
-            return new AuthenticationHeaderValue("Baerer", session.accessToken);
+            return new AuthenticationHeaderValue("Bearer", session.accessToken);
         }
 
         protected virtual async Task RefreshAccessToken()
