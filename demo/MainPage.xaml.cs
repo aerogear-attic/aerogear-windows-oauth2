@@ -1,9 +1,13 @@
 ﻿using AeroGear.OAuth2;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
@@ -67,7 +71,7 @@ namespace demo
             else
             {
                 var config = await GoogleConfig.Create(
-                    "517285908032-ncche214v7htbqcs2pi3l5okuoc62nhe.apps.googleusercontent.com",
+                    "517285908032-11moj33qbn01m7sem6g7gmfco2tp252v.apps.googleusercontent.com",
                     new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
                     "google"
                 );
@@ -88,42 +92,36 @@ namespace demo
             }
             else
             {
+                button.Content = "Take Picture";
                 await new MessageDialog("no file to upload").ShowAsync();
             }
         }
 
         public async void Upload(OAuth2Module module)
         {
-            var request = AuthzWebRequest.Create("https://www.googleapis.com/upload/drive/v2/files", module);
-            request.Method = "POST";
+            HttpContent stringContent = new StringContent(file.Name);
 
-            using (var postStream = await Task<Stream>.Factory.FromAsync(request.BeginGetRequestStream, request.EndGetRequestStream, request))
+            using (var client = new HttpClient())
+            using (var formData = new MultipartFormDataContent())
             {
+                client.DefaultRequestHeaders.Authorization = module.AuthenticationHeaderValue();
+
+                formData.Add(new StreamContent((await file.OpenAsync(FileAccessMode.Read)).AsStreamForRead()), file.Name);
+
                 button.IsEnabled = false;
                 progress.IsActive = true;
-                using (var stream = await file.OpenAsync(FileAccessMode.Read))
-                {
-                    Stream s = stream.AsStreamForRead();
-                    s.CopyTo(postStream);
-                }
-            }
 
-            HttpWebResponse responseObject = (HttpWebResponse)await Task<WebResponse>.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, request);
-            using (var responseStream = responseObject.GetResponseStream())
-            {
-                using (var streamReader = new StreamReader(responseStream))
-                {
-                    var response = await streamReader.ReadToEndAsync();
-                    Debug.WriteLine(response);
-                }
+                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri("https://localhost:8443/shoot/rest/photos"));
+                requestMessage.Content = formData;
+                HttpResponseMessage responseObject = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
+                Debug.WriteLine(responseObject);
+                await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
             }
 
             file = null;
             button.Content = "Take Picture";
             button.IsEnabled = true;
             progress.IsActive = false;
-
-            await new MessageDialog("uploaded file " + (responseObject.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
         }
 
         async void IWebAuthenticationContinuable.ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
