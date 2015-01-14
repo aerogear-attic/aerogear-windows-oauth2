@@ -21,7 +21,7 @@ namespace AeroGear.OAuth2
 
             //then
             Assert.IsNotNull(result);
-            Assert.AreEqual("1420451611", result["iat"].ToString());
+            Assert.AreEqual(1420451611, result.iat);
         }
     }
 }
