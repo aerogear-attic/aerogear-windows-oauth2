@@ -23,7 +23,7 @@ namespace AeroGear.OAuth2
         }
 
         [TestMethod]
-        public void ShouldRequestRenewToken()
+        public async Task ShouldRequestRenewToken()
         {
             //given
             Session session = new Session()
@@ -36,7 +36,7 @@ namespace AeroGear.OAuth2
             MockOAuth2Module module = new MockOAuth2Module(session);
 
             //when
-            module.RequestAccessAndContinue();
+            await module.RequestAccessAndContinue();
 
             //then
             module.AssertCalled("RefreshAccessToken");
