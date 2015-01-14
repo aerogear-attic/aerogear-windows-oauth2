@@ -117,7 +117,7 @@ namespace AeroGear.OAuth2
             {
                 parameters["client_secret"] = config.clientSecret;
             }
-            await UpdateToken(parameters);
+            await UpdateToken(parameters, config.refreshTokenEndpoint);
         }
 
         public async Task ExtractCode(WebAuthenticationBrokerContinuationEventArgs args)
@@ -147,12 +147,12 @@ namespace AeroGear.OAuth2
             {
                 parameters["client_secret"] = config.clientSecret;
             }
-            await UpdateToken(parameters);
+            await UpdateToken(parameters, config.accessTokenEndpoint);
         }
 
-        private async Task UpdateToken(Dictionary<string, string> parameters)
+        private async Task UpdateToken(Dictionary<string, string> parameters, string endpoint)
         {
-            var request = WebRequest.Create(config.baseURL + config.accessTokenEndpoint);
+            var request = WebRequest.Create(config.baseURL + endpoint);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
 
@@ -168,6 +168,8 @@ namespace AeroGear.OAuth2
             using (var response = await Task<WebResponse>.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, request))
             {
                 session = await ParseResponse(response.GetResponseStream());
+                session.accountId = config.accountId;
+                await repository.Save(session);
             }
         }
 
@@ -177,7 +179,6 @@ namespace AeroGear.OAuth2
             {
                 DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Session));
                 var session = (Session)serializer.ReadObject(stream);
-                await repository.Save(session);
                 return session;
             }
         }
