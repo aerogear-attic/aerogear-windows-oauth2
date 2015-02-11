@@ -12,7 +12,7 @@ OAuth2 Client for windows phone. Taking care of:
 Example Usage
 -------------
 
-In the example below is usage for google, first go to [google console](https://console.developers.google.com) create a project and under `API & auth` > `Credentials` select `Create new client ID`
+In the example below is usage for google, first go to [google console](https://console.developers.google.com) create a project  select `API & auth` > `APIs` and enable `Drive API` then under `API & auth` > `Credentials` select `Create new client ID`
 there select `Installed application` and then `iOS` (yeah you read that correctly select iOS) this is because iOS also supports setting up a special protocol so that you app
 continues after being susspended. For bundle id choose any protocol you want.
 
