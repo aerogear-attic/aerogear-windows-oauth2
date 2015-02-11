@@ -12,18 +12,20 @@ OAuth2 Client for windows phone. Taking care of:
 Example Usage
 -------------
 
-In the example below is usage for google, first go to [google console](https://console.developers.google.com) create a project and under `API & auth` > `Credentials` select `Create new client ID`
+In the example below is usage for google, first go to [google console](https://console.developers.google.com) create a project  select `API & auth` > `APIs` and enable `Drive API` then under `API & auth` > `Credentials` select `Create new client ID`
 there select `Installed application` and then `iOS` (yeah you read that correctly select iOS) this is because iOS also supports setting up a special protocol so that you app
 continues after being susspended. For bundle id choose any protocol you want.
 
 Go to Visual Studio and open `Package.appxmanifest` go to `Declarations` add a protocol and set the bundle id you picked on the google console.
 
-Next step is setting up the account in code like this:
+![Add protocol](protocol.png)
+
+Next step is setting up the account in code, replace the `<google-client-id>` with your google client id:
 
 ```csharp
 
 var config = await GoogleConfig.Create(													//[1]
-    "427285908022-nddhe234v7htbqcs1pi3l5okuoc45nhd.apps.googleusercontent.com",
+    "<google-client-id>",
     new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
     "google"
 );
