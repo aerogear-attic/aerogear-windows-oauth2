@@ -34,7 +34,6 @@ namespace demo
     /// </summary>
     public sealed partial class App : Application
     {
-        public ContinuationManager ContinuationManager { get; private set; }
         private TransitionCollection transitions;
 
         /// <summary>
@@ -43,26 +42,18 @@ namespace demo
         /// </summary>
         public App()
         {
-            this.InitializeComponent();
+            //this.InitializeComponent();
             this.Suspending += this.OnSuspending;
         }
 
         protected async override void OnActivated(IActivatedEventArgs args)
         {
-            ContinuationManager = new ContinuationManager();
             Frame rootFrame = CreateRootFrame();
             await RestoreStatusAsync(args.PreviousExecutionState);
 
             if (rootFrame.Content == null)
             {
                 rootFrame.Navigate(typeof(MainPage));
-            }
-
-            var continuationEventArgs = args as IContinuationActivatedEventArgs;
-            if (continuationEventArgs != null)
-            {
-                // Call ContinuationManager to handle continuation activation
-                ContinuationManager.Continue(continuationEventArgs, rootFrame);
             }
 
             Window.Current.Activate();

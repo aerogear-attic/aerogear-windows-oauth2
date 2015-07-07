@@ -24,7 +24,7 @@ namespace AeroGear.OAuth2
 {
     public interface AuthzModule
     {
-        Task<bool> RequestAccessAndContinue();
+        Task<string> RequestAccess();
 
         Tuple<string, string> AuthorizationFields();
     }

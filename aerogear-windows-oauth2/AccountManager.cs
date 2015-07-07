@@ -74,13 +74,6 @@ namespace AeroGear.OAuth2
         {
             return Instance.modules.Where(entry => entry.Value.config.clientId == clientId).Single().Value;
         }
-
-        public async static Task<OAuth2Module> ParseContinuationEvent(Windows.ApplicationModel.Activation.WebAuthenticationBrokerContinuationEventArgs args)
-        {
-            var module = GetAccountByName((string)args.ContinuationData["name"]);
-            await module.ExtractCode(args);
-            return module;
-        }
     }
 
     public class GoogleConfig : Config

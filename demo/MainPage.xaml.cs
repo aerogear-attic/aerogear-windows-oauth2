@@ -23,6 +23,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Windows.ApplicationModel.Activation;
+using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Popups;
@@ -37,7 +38,7 @@ namespace demo
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page, IFileOpenPickerContinuable, IWebAuthenticationContinuable
+    public sealed partial class MainPage : Page
     {
         public static MainPage Current;
         public StorageFile file { get; set; }
@@ -77,77 +78,55 @@ namespace demo
                     ViewMode = PickerViewMode.Thumbnail
                 };
                 openPicker.FileTypeFilter.Add(".jpg");
-                openPicker.PickSingleFileAndContinue();
+                file = await openPicker.PickSingleFileAsync();
                 button.Content = "Upload";
             }
             else
             {
-                var config = await GoogleConfig.Create(
-                    "517285908032-12332132132131321312.apps.googleusercontent.com",
-                    new List<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
+                var config = await googleconfig.create(
+                    "517285908032-tjn5607ris2msdmfm2mdic00m0phsgmg.apps.googleusercontent.com",
+                    new list<string>(new string[] { "https://www.googleapis.com/auth/drive" }),
                     "google"
                 );
 
                 //var config = await KeycloakConfig.Create("shoot-third-party", "https://localhost:8443", "shoot-realm");
-                //var config = FacebookConfig.Create("1654557457742519", "9cab3cb953d3194908f44f1764b5b921", 
-                //    new List<string>(new string[] { "photo_upload, publish_actions" }), "facebook");
+                //var config = FacebookConfig.Create("853024668116416", "561448404a97917b704dcc0e215e9cff",
+                //    new List<string>(new string[] { "publish_actions" }), "facebook");
 
                 var module = await AccountManager.AddAccount(config);
-                if (await module.RequestAccessAndContinue())
+                await module.RequestAccess();
+
+                using (var client = new HttpClient())
+                using (var content = new MultipartFormDataContent())
                 {
-                    Upload(module);
+                    button.IsEnabled = false;
+                    progress.IsActive = true;
+
+                    client.DefaultRequestHeaders.Authorization = module.AuthenticationHeaderValue();
+
+                    var fileContent = new StreamContent((await file.OpenAsync(FileAccessMode.Read)).AsStreamForRead());
+                    fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "\"image\"",
+                        FileName = "\"" + file.Name + "\""
+                    };
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpg");
+
+                    content.Add(fileContent);
+
+                    string responseString = null;
+                    HttpResponseMessage response = await client.PostAsync(new Uri("https://www.googleapis.com/upload/drive/v2/files"), content);
+                    responseString = await response.Content.ReadAsStringAsync();
+
+                    Debug.WriteLine(responseString);
+                    await new MessageDialog("uploaded file " + (response.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
                 }
-            }
-        }
 
-        public async void ContinueFileOpenPicker(FileOpenPickerContinuationEventArgs args)
-        {
-            if (args.Files.Count > 0)
-            {
-                file = args.Files[0];
-            }
-            else
-            {
+                file = null;
                 button.Content = "Take Picture";
-                await new MessageDialog("no file to upload").ShowAsync();
+                button.IsEnabled = true;
+                progress.IsActive = false;
             }
-        }
-
-        public async void Upload(OAuth2Module module)
-        {
-            using (var client = new HttpClient())
-            using (var content = new MultipartFormDataContent())
-            {
-                button.IsEnabled = false;
-                progress.IsActive = true;
-
-                client.DefaultRequestHeaders.Authorization = module.AuthenticationHeaderValue();
-
-                var fileContent = new StreamContent((await file.OpenAsync(FileAccessMode.Read)).AsStreamForRead());
-                fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-                {
-                    Name = "\"image\"",
-                    FileName = "\"" + file.Name + "\""
-                };
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpg");
-
-                content.Add(fileContent);
-                HttpResponseMessage response = await client.PostAsync(new Uri("https://www.googleapis.com/upload/drive/v2/files"), content);
-                string responseString = await response.Content.ReadAsStringAsync();
-
-                Debug.WriteLine(responseString);
-                await new MessageDialog("uploaded file " + (response.StatusCode != HttpStatusCode.OK ? "un" : "") + "successful").ShowAsync();
-            }
-
-            file = null;
-            button.Content = "Take Picture";
-            button.IsEnabled = true;
-            progress.IsActive = false;
-        }
-
-        async void IWebAuthenticationContinuable.ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
-        {
-            Upload(await AccountManager.ParseContinuationEvent(args));
         }
     }
 }

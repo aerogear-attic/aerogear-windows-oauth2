@@ -23,7 +23,6 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Activation;
 using Windows.Foundation.Collections;
 using Windows.Security.Authentication.Web;
 
@@ -60,40 +59,36 @@ namespace AeroGear.OAuth2
             {
                 session = await repository.Read(config.accountId);
             }
-            catch (IOException e)
+            catch (IOException)
             {
                 session = new Session() { accountId = config.accountId };
             }
         }
 
-        public async Task<bool> RequestAccessAndContinue()
+        public async Task<string> RequestAccess()
         {
             if (session.accessToken == null || !session.TokenIsNotExpired())
             {
                 if (session.refreshToken != null && session.RefreshTokenIsNotExpired())
                 {
                     await RefreshAccessToken();
-                    return true;
                 }
                 else
                 {
-                    RequestAuthorizationCode();
-                    return false;
+                    await ExtractCode(await RequestAuthorizationCode());
                 }
             }
-            else
-            {
-                return true;
-            }
+
+            return session.accessToken;
         }
 
-        public virtual void RequestAuthorizationCode()
+        public async virtual Task<WebAuthenticationResult> RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, config.scope, Uri.EscapeDataString(config.redirectURL), Uri.EscapeDataString(config.clientId));
             var uri = new Uri(config.baseURL + config.authzEndpoint).AbsoluteUri + param;
 
             var values = new ValueSet() { { "name", config.accountId } };
-            WebAuthenticationBroker.AuthenticateAndContinue(new Uri(uri), new Uri(config.redirectURL), values, WebAuthenticationOptions.None);
+            return await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, new Uri(uri), new Uri(config.redirectURL));
         }
 
         public Tuple<string, string> AuthorizationFields()
@@ -120,11 +115,11 @@ namespace AeroGear.OAuth2
             await UpdateToken(parameters, config.refreshTokenEndpoint);
         }
 
-        public async Task ExtractCode(WebAuthenticationBrokerContinuationEventArgs args)
+        public async Task ExtractCode(WebAuthenticationResult result)
         {
-            if (args.WebAuthenticationResult.ResponseStatus == WebAuthenticationStatus.Success) 
+            if (result.ResponseStatus == WebAuthenticationStatus.Success) 
             {
-                IDictionary<string, string> queryParams = ParseQueryString(new Uri(args.WebAuthenticationResult.ResponseData).Query);
+                IDictionary<string, string> queryParams = ParseQueryString(new Uri(result.ResponseData).Query);
                 if (queryParams.ContainsKey("code"))
                 {
                     await ExchangeAuthorizationCodeForAccessToken(queryParams["code"]);
@@ -136,7 +131,7 @@ namespace AeroGear.OAuth2
             }
             else
             {
-                throw new Exception(string.Format("user cancelled the authorization status: '{0}': details: {1}", args.WebAuthenticationResult.ResponseStatus, args.WebAuthenticationResult.ResponseErrorDetail));
+                throw new Exception(string.Format("user cancelled the authorization status: '{0}': details: {1}", result.ResponseStatus, result.ResponseErrorDetail));
             }
         }
 

@@ -48,7 +48,7 @@ namespace AeroGear.OAuth2
             StorageFile file = await Package.Current.InstalledLocation.GetFileAsync("AppxManifest.xml");
             string manifestXml = await FileIO.ReadTextAsync(file);
             document = XDocument.Parse(manifestXml);
-            xname = XNamespace.Get("http://schemas.microsoft.com/appx/2010/manifest");
+            xname = XNamespace.Get("http://schemas.microsoft.com/appx/manifest/uap/windows10");
         }
 
         public async static Task<string> GetProtocol()
