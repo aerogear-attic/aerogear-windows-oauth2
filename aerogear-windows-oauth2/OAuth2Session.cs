@@ -38,9 +38,9 @@ namespace AeroGear.OAuth2
         public string accountId { get; set; }
         [DataMember(Name = "access_token")]
         public string accessToken { get; set; }
-        [DataMember]
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
         public DateTime accessTokenExpirationDate { get; set; }
-        [DataMember]
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
         public DateTime refreshTokenExpirationDate { get; set; }
 
         [DataMember(Name = "expires_in")]

@@ -82,13 +82,14 @@ namespace AeroGear.OAuth2
             return session.accessToken;
         }
 
-        public async virtual Task<WebAuthenticationResult> RequestAuthorizationCode()
+        public async virtual Task<AuthenticationResult> RequestAuthorizationCode()
         {
             var param = string.Format(PARAM_TEMPLATE, config.scope, Uri.EscapeDataString(config.redirectURL), Uri.EscapeDataString(config.clientId));
             var uri = new Uri(config.baseURL + config.authzEndpoint).AbsoluteUri + param;
 
             var values = new ValueSet() { { "name", config.accountId } };
-            return await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, new Uri(uri), new Uri(config.redirectURL));
+            var result = await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None, new Uri(uri), new Uri(config.redirectURL));
+            return AuthenticationResult.CopyOf(result);
         }
 
         public Tuple<string, string> AuthorizationFields()
@@ -105,7 +106,7 @@ namespace AeroGear.OAuth2
             return new AuthenticationHeaderValue("Bearer", session.accessToken);
         }
 
-        protected virtual async Task RefreshAccessToken()
+        internal virtual async Task RefreshAccessToken()
         {
             var parameters = new Dictionary<string, string>() { { "refresh_token", session.refreshToken }, { "client_id", config.clientId }, { "grant_type", "refresh_token" } };
             if (config.clientSecret != null)
@@ -115,7 +116,7 @@ namespace AeroGear.OAuth2
             await UpdateToken(parameters, config.refreshTokenEndpoint);
         }
 
-        public async Task ExtractCode(WebAuthenticationResult result)
+        private async Task ExtractCode(AuthenticationResult result)
         {
             if (result.ResponseStatus == WebAuthenticationStatus.Success) 
             {
@@ -135,7 +136,7 @@ namespace AeroGear.OAuth2
             }
         }
 
-        private async Task ExchangeAuthorizationCodeForAccessToken(string code)
+        internal virtual async Task ExchangeAuthorizationCodeForAccessToken(string code)
         {
             var parameters = new Dictionary<string, string>() { { "grant_type", "authorization_code" }, { "code", code }, { "client_id", config.clientId }, { "redirect_uri", config.redirectURL } };
             if (config.clientSecret != null)

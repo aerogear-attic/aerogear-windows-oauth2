@@ -37,6 +37,7 @@ namespace AeroGear.OAuth2
 
             //then
             module.AssertCalled("RequestAuthorizationCode");
+            module.AssertCalled("ExchangeAuthorizationCodeForAccessToken");
         }
 
         [TestMethod]
@@ -96,16 +97,32 @@ namespace AeroGear.OAuth2
             this.session = session;
         }
 
-        public override Task<WebAuthenticationResult> RequestAuthorizationCode()
+        public override Task<AuthenticationResult> RequestAuthorizationCode()
         {
             called.Add("RequestAuthorizationCode");
-            return null;
+            var result = new AuthenticationResult()
+            {
+                ResponseStatus = WebAuthenticationStatus.Success,
+                ResponseData = "http://localhost?code=12"
+            };
+
+            var taskSource = new TaskCompletionSource<AuthenticationResult>();
+            taskSource.SetResult(result);
+            return taskSource.Task;
         }
 
-        protected override Task RefreshAccessToken()
+        internal override Task RefreshAccessToken()
         {
-            called.Add("RefreshAccessToken");
-            return null;
+            return Task.Factory.StartNew(() => {
+                called.Add("RefreshAccessToken");
+            });
+        }
+
+        internal override Task ExchangeAuthorizationCodeForAccessToken(string code)
+        {
+            return Task.Factory.StartNew(() => {
+                called.Add("ExchangeAuthorizationCodeForAccessToken");
+            });
         }
 
         public void AssertCalled(string method)

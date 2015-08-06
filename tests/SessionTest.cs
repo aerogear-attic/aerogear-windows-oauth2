@@ -72,6 +72,7 @@ namespace tests
 
                 using (MemoryStream stream = new MemoryStream(bytes))
                 {
+                    ms.Position = 0;
                     readBackSession = (Session)serializer.ReadObject(ms);
                 }
             }

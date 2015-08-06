@@ -114,6 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccountManager.cs" />
+    <Compile Include="AuthenticationResult.cs" />
     <Compile Include="AuthzModule.cs" />
     <Compile Include="AuthzWebRequest.cs" />
     <Compile Include="Config.cs" />
