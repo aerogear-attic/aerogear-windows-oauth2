@@ -1,53 +1,49 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  JBoss, Home of Professional Open Source
-  Copyright Red Hat, Inc., and individual contributors
+﻿<?xml version="1.0" encoding="utf-8"?>
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
-  <Identity Name="79656544-6cc2-4834-a4da-76591349f01c" Publisher="CN=edewit" Version="1.0.0.0" />
-  <mp:PhoneIdentity PhoneProductId="79656544-6cc2-4834-a4da-76591349f01c" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+
+  <Identity
+    Name="f9845f28-842c-4631-ae6c-15136a753c6f"
+    Publisher="CN=ErikJan"
+    Version="1.0.0.0" />
+
+  <mp:PhoneIdentity PhoneProductId="f9845f28-842c-4631-ae6c-15136a753c6f" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+
   <Properties>
-    <DisplayName>oauth2-demo</DisplayName>
-    <PublisherDisplayName>edewit</PublisherDisplayName>
+    <DisplayName>demo</DisplayName>
+    <PublisherDisplayName>ErikJan</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
+
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10069.0" MaxVersionTested="10.0.10069.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
   </Dependencies>
+
   <Resources>
-    <Resource Language="x-generate" />
+    <Resource Language="x-generate"/>
   </Resources>
+
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="oauth2-demo.App">
-      <uap:VisualElements DisplayName="oauth2-demo" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="demo"  BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\WideLogo.png" Square71x71Logo="Assets\Square71x71Logo.png">
-        </uap:DefaultTile>
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="demo.App">
+      <uap:VisualElements
+        DisplayName="demo"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png"
+        Description="demo"
+        BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
-      <Extensions>
-        <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="com.aerogear.oauth.test"/>
-        </uap:Extension>
-      </Extensions>
     </Application>
   </Applications>
+
   <Capabilities>
-    <Capability Name="internetClientServer" />
+    <Capability Name="internetClient" />
   </Capabilities>
 </Package>

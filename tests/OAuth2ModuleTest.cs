@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.Security.Authentication.Web;
 
 namespace AeroGear.OAuth2
 {
@@ -32,7 +33,7 @@ namespace AeroGear.OAuth2
             MockOAuth2Module module = new MockOAuth2Module();
 
             //when
-            await module.RequestAccessAndContinue();
+            await module.RequestAccess();
 
             //then
             module.AssertCalled("RequestAuthorizationCode");
@@ -52,7 +53,7 @@ namespace AeroGear.OAuth2
             MockOAuth2Module module = new MockOAuth2Module(session);
 
             //when
-            await module.RequestAccessAndContinue();
+            await module.RequestAccess();
 
             //then
             module.AssertCalled("RefreshAccessToken");
@@ -95,9 +96,10 @@ namespace AeroGear.OAuth2
             this.session = session;
         }
 
-        public override void RequestAuthorizationCode()
+        public override Task<WebAuthenticationResult> RequestAuthorizationCode()
         {
             called.Add("RequestAuthorizationCode");
+            return null;
         }
 
         protected override Task RefreshAccessToken()
