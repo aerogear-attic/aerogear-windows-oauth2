@@ -119,7 +119,6 @@
     <Compile Include="Config.cs" />
     <Compile Include="FacebookOAuth2Module.cs" />
     <Compile Include="KeycloakOAuth2Module.cs" />
-    <Compile Include="ManifestInfo.cs" />
     <Compile Include="OAuth2Module.cs" />
     <Compile Include="OAuth2Session.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

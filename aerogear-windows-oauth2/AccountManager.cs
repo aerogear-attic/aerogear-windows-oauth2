@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AeroGear.OAuth2
@@ -80,12 +78,11 @@ namespace AeroGear.OAuth2
     {
         public async static Task<GoogleConfig> Create(string clientId, List<string> scopes, string accountId)
         {
-            var protocol = await ManifestInfo.GetProtocol();
             return new GoogleConfig()
             {
                 baseURL = "https://accounts.google.com/",
                 authzEndpoint = "o/oauth2/auth",
-                redirectURL = protocol + ":/oauth2Callback",
+                redirectURL = "http://localhost",
                 accessTokenEndpoint = "o/oauth2/token",
                 refreshTokenEndpoint = "o/oauth2/token",
                 revokeTokenEndpoint = "rest/revoke",
@@ -100,13 +97,12 @@ namespace AeroGear.OAuth2
     {
         public async static Task<KeycloakConfig> Create(string clientId, string host, string realm)
         {
-            var protocol = await ManifestInfo.GetProtocol();
             var defaulRealmName = clientId + "-realm";
             var realmName = realm != null ? realm : defaulRealmName;
             return new KeycloakConfig() {
                 baseURL = host + "/auth/",
                 authzEndpoint = string.Format("realms/{0}/tokens/login", realmName),
-                redirectURL = protocol + ":/oauth2Callback",
+                redirectURL = "http://oauth2Callback",
                 accessTokenEndpoint = string.Format("realms/{0}/tokens/access/codes", realmName),
                 clientId = clientId,
                 refreshTokenEndpoint = string.Format("realms/{0}/tokens/refresh", realmName),
