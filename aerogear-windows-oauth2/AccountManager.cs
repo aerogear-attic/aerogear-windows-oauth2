@@ -112,12 +112,12 @@ namespace AeroGear.OAuth2
             var realmName = realm != null ? realm : defaulRealmName;
             return new KeycloakConfig() {
                 baseURL = host + "/auth/",
-                authzEndpoint = string.Format("realms/{0}/tokens/login", realmName),
+                authzEndpoint = string.Format("realms/{0}/protocol/openid-connect/auth", realmName),
                 redirectURL = protocol + ":/oauth2Callback",
-                accessTokenEndpoint = string.Format("realms/{0}/tokens/access/codes", realmName),
+                accessTokenEndpoint = string.Format("realms/{0}/protocol/openid-connect/token", realmName),
                 clientId = clientId,
-                refreshTokenEndpoint = string.Format("realms/{0}/tokens/refresh", realmName),
-                revokeTokenEndpoint = string.Format("realms/%@/tokens/logout", realmName),
+                refreshTokenEndpoint = string.Format("realms/{0}/protocol/openid-connect/token", realmName),
+                revokeTokenEndpoint = string.Format("realms/%@/protocol/openid-connect/logout", realmName),
                 accountId = clientId
             };
         }
